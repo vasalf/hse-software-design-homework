@@ -99,3 +99,10 @@ TEST(TokenizerTest, singleQuotesInsideDoubleQuotes) {
             {R"(abcd'\' ef)", "'gh''"}
     );
 }
+
+TEST(TokenizerTest, pipelines) {
+    DoTest(
+            {"echo $VAR | cat - |cat -|grep value1|grep value2\n"},
+            {"echo", "$VAR", "|", "cat", "-", "|", "cat", "-", "|", "grep", "value1", "|", "grep", "value2"}
+    );
+}

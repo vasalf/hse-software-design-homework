@@ -78,3 +78,10 @@ TEST(VarExpanderTest, quotesAfterVars) {
         {"echo", "valueSP"}
     );
 }
+
+TEST(VarExpanderTest, pipeAfterVar) {
+    DoTest(
+        "echo $VAR|cat -\n",
+        {"echo", "value", "|", "cat", "-"}
+    );
+}

@@ -35,10 +35,13 @@ public:
         SingleQuote_ = DFA_.MakeState();
         DoubleQuote_ = DFA_.MakeState();
         Escape_ = DFA_.MakeState();
+        Pipe_ = DFA_.MakeState();
 
         Zero_->SetCallback(
                 [this](char c, TDFACallback& cb) {
-                    if (!std::isspace(c)) {
+                    if (c == '|') {
+                        cb.PushStateAndDelegate(Pipe_);
+                    } else if (!std::isspace(c)) {
                         cb.StartToken();
                         cb.PushStateAndDelegate(Token_);
                     }
@@ -57,6 +60,10 @@ public:
                     } else if (std::isspace(c)) {
                         cb.EndToken();
                         cb.PopStateAndDelegate();
+                    } else if (c == '|') {
+                        cb.EndToken();
+                        cb.PopState();
+                        cb.PushStateAndDelegate(Pipe_);
                     } else {
                         cb.PushCharacter(TExtChar(c));
                     }
@@ -94,6 +101,14 @@ public:
                     cb.PopState();
                 }
         );
+        Pipe_->SetCallback(
+                [this](char c, TDFACallback& cb) {
+                    cb.StartToken();
+                    cb.PushCharacter(TExtChar(c));
+                    cb.EndToken();
+                    cb.PopState();
+                }
+        );
     }
 
     ~TImpl() = default;
@@ -125,6 +140,7 @@ private:
     TDFAState* SingleQuote_;
     TDFAState* DoubleQuote_;
     TDFAState* Escape_;
+    TDFAState* Pipe_;
 };
 
 TTokenizer::TTokenizer()
