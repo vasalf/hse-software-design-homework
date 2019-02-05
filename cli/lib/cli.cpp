@@ -14,11 +14,11 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <cli.h>
+#include "cli.h"
 
 namespace NCli {
 
 void RunMain() {
 }
 
-}
+} // namespace NCli

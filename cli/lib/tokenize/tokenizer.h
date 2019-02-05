@@ -16,8 +16,36 @@
 
 #pragma once
 
+#include <tokenize/token.h>
+
+#include <memory>
+#include <string>
+#include <vector>
+
 namespace NCli {
 
-void RunMain();
+class TTokenizer final {
+public:
+    enum class EState {
+        WAITING,
+        DONE
+    };
+
+    TTokenizer();
+    ~TTokenizer();
+
+    TTokenizer(const TTokenizer&) = delete;
+    TTokenizer& operator=(const TTokenizer&) = delete;
+    TTokenizer(TTokenizer&&) noexcept = default;
+    TTokenizer& operator=(TTokenizer&&) noexcept = default;
+
+    void Update(std::string s);
+    EState State() const;
+    std::vector<TToken> ParsedTokens() const;
+
+private:
+    class TImpl;
+    std::unique_ptr<TImpl> Impl_;
+};
 
 } // namespace NCli

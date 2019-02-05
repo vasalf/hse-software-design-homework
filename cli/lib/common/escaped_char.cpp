@@ -14,10 +14,22 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#pragma once
+#include "escaped_char.h"
+
 
 namespace NCli {
 
-void RunMain();
+TEscapedChar::TEscapedChar(char c, ECharEscapeStatus escaped)
+    : Char_(c)
+    , EscapeStatus_(escaped)
+{}
+
+char TEscapedChar::ToChar() const {
+    return Char_;
+}
+
+ECharEscapeStatus TEscapedChar::EscapeStatus() const {
+    return EscapeStatus_;
+}
 
 } // namespace NCli

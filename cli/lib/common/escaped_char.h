@@ -16,8 +16,31 @@
 
 #pragma once
 
+#include <vector>
+
 namespace NCli {
 
-void RunMain();
+enum class ECharEscapeStatus {
+    ESCAPED,
+    UNESCAPED
+};
+
+class TEscapedChar final {
+public:
+    explicit TEscapedChar(char c, ECharEscapeStatus escaped = ECharEscapeStatus::UNESCAPED);
+
+    ~TEscapedChar() = default;
+    TEscapedChar(const TEscapedChar&) = default;
+    TEscapedChar& operator=(const TEscapedChar&) = default;
+    TEscapedChar(TEscapedChar&&) noexcept = default;
+    TEscapedChar& operator=(TEscapedChar&&) noexcept = default;
+
+    char ToChar() const;
+    ECharEscapeStatus EscapeStatus() const;
+
+private:
+    char Char_;
+    ECharEscapeStatus EscapeStatus_;
+};
 
 } // namespace NCli

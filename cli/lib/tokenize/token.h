@@ -16,8 +16,33 @@
 
 #pragma once
 
+#include <common/escaped_char.h>
+
+#include <string>
+#include <vector>
+
 namespace NCli {
 
-void RunMain();
+class TToken {
+public:
+    TToken() = default;
+
+    ~TToken() = default;
+    TToken(const TToken&) = default;
+    TToken& operator=(const TToken&) = default;
+    TToken(TToken&&) noexcept = default;
+    TToken& operator=(TToken&&) noexcept = default;
+
+    std::string ToString() const;
+
+    TEscapedChar& operator[](std::size_t i);
+    const TEscapedChar& operator[](std::size_t i) const;
+
+    void PushBack(const TEscapedChar& character);
+    void PushBack(TEscapedChar&& character);
+
+private:
+    std::vector<TEscapedChar> Token_;
+};
 
 } // namespace NCli

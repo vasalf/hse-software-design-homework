@@ -14,10 +14,16 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#pragma once
+#include <gtest/gtest.h>
+#include <tokenize/tokenizer.h>
 
-namespace NCli {
+using namespace NCli;
 
-void RunMain();
+TEST(TokenizerTest, smokeTest) {
+    TTokenizer tokenizer;
+    tokenizer.Update("a\n");
 
-} // namespace NCli
+    auto tokens = tokenizer.ParsedTokens();
+    ASSERT_EQ(1, tokens.size());
+    ASSERT_EQ("a", tokens[0].ToString());
+}

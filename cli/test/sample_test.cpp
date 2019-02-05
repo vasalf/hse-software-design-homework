@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
 
-TEST(TSampleTest, testSample) {
+TEST(SampleTest, testSample) {
     ASSERT_EQ(0, 0);
 }

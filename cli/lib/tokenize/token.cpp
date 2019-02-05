@@ -14,10 +14,33 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#pragma once
+#include "token.h"
 
 namespace NCli {
 
-void RunMain();
+std::string TToken::ToString() const {
+    std::string ret;
+    ret.reserve(Token_.size());
+    for (std::size_t i = 0; i != Token_.size(); i++) {
+        ret.push_back(Token_[i].ToChar());
+    }
+    return ret;
+}
+
+TEscapedChar& TToken::operator[](std::size_t i) {
+    return Token_[i];
+}
+
+const TEscapedChar& TToken::operator[](std::size_t i) const {
+    return Token_[i];
+}
+
+void TToken::PushBack(const TEscapedChar& character) {
+    Token_.push_back(character);
+}
+
+void TToken::PushBack(TEscapedChar&& character) {
+    Token_.push_back(std::forward<TEscapedChar>(character));
+}
 
 } // namespace NCli
