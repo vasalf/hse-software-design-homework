@@ -17,9 +17,18 @@
 #pragma once
 
 #include <map>
+#include <optional>
 #include <string>
+#include <vector>
 
 namespace NCli {
+
+struct TAssignment {
+    std::string Name;
+    std::string Value;
+};
+
+std::optional<TAssignment> ParseEnvVarAssignment(const std::string& s);
 
 using TEnvironment = std::map<std::string, std::string>;
 
@@ -37,6 +46,8 @@ public:
 
     const std::string& GetValue(const std::string& name) const;
     void SetLocalValue(const std::string& name, const std::string& value);
+
+    std::vector<std::string> ToEnvP() const;
 
 private:
     TEnvironment& GlobalEnvironment_;

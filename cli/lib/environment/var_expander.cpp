@@ -16,6 +16,8 @@
 
 #include "var_expander.h"
 
+#include <common/char_utils.h>
+
 #include <cctype>
 
 namespace NCli {
@@ -28,7 +30,7 @@ bool IsVariableIndicator(const TExtChar& c) {
 }
 
 bool IsVariableNameSymbol(const TExtChar& c) {
-    return (std::isalnum(c.ToChar()) || c.ToChar() == '_')
+    return IsVariableNameLetter(c.ToChar())
            && c.EscapeStatus() == ECharEscapeStatus::UNESCAPED
            && c.IgnoranceStatus() == ECharIgnoranceStatus::NOTHING;
 }

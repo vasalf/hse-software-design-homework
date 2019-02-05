@@ -16,8 +16,12 @@
 
 #include "environment.h"
 
+#include <common/char_utils.h>
+
 #include <algorithm>
 #include <cstring>
+#include <iostream>
+#include <vector>
 
 namespace NCli {
 
@@ -25,20 +29,45 @@ TEnvironment LoadGlobalEnvironment(const char** envp) {
     TEnvironment ret;
 
     for (const char** varval = envp; *varval != nullptr; varval++) {
-        const char* end = *varval + std::strlen(*varval);
-        const char* eq = std::find(*varval, end, '=');
-
-        std::string name;
-        name.reserve(eq - *varval);
-        std::copy(*varval, eq, std::back_inserter(name));
-
-        std::string value;
-        value.reserve(end - eq - 1);
-        std::copy(eq + 1, end, std::back_inserter(value));
-
-        ret[name] = value;
+        auto assignment = ParseEnvVarAssignment(std::string(*varval));
+        if (assignment.has_value()) {
+            ret[assignment.value().Name] = assignment.value().Value;
+        } else {
+            std::cerr << "failed to parse environment variable: " << *varval << std::endl;
+        }
     }
 
+    return ret;
+}
+
+namespace {
+
+enum class EAssignmentParserState {
+    NAME,
+    VARIABLE
+};
+
+} // namespace <anonymous>
+
+std::optional<TAssignment> ParseEnvVarAssignment(const std::string& s) {
+    EAssignmentParserState curState = EAssignmentParserState::NAME;
+    TAssignment ret{};
+    for (char c: s) {
+        if (curState == EAssignmentParserState::NAME) {
+            if (c == '=') {
+                curState = EAssignmentParserState::VARIABLE;
+            } else if (!IsVariableNameLetter(c)) {
+                return {};
+            } else {
+                ret.Name.push_back(c);
+            }
+        } else {
+            ret.Value.push_back(c);
+        }
+    }
+    if (curState == EAssignmentParserState::NAME) {
+        return {};
+    }
     return ret;
 }
 
@@ -58,6 +87,23 @@ const std::string& TCmdEnvironment::GetValue(const std::string& name) const {
 
 void TCmdEnvironment::SetLocalValue(const std::string& name, const std::string& value) {
     LocalEnvironment_[name] = value;
+}
+
+std::vector<std::string> TCmdEnvironment::ToEnvP() const {
+    std::vector<std::string> ret;
+    for (auto p : GlobalEnvironment_) {
+        if (!LocalEnvironment_.count(p.first)) {
+            char buf[p.first.size() + 1 + p.second.size() + 1];
+            std::sprintf(buf, "%s=%s", p.first.c_str(), p.second.c_str());
+            ret.push_back(buf);
+        }
+    }
+    for (auto p : LocalEnvironment_) {
+        char buf[p.first.size() + 1 + p.second.size() + 1];
+        std::sprintf(buf, "%s=%s", p.first.c_str(), p.second.c_str());
+        ret.push_back(buf);
+    }
+    return ret;
 }
 
 } // namespace NCli
