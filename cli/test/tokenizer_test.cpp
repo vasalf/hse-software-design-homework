@@ -67,35 +67,35 @@ TEST(TokenizerTest, escapedEOL) {
 
 TEST(TokenizerTest, escapedSpace) {
     DoTest(
-            {R"(abc\ def)", "\n"},
+            {R"(abc\ def)" "\n"},
             {"abc def"}
     );
 }
 
 TEST(TokenizerTest, escapedQuotes) {
     DoTest(
-            {R"(ab\'\\cdef\'\"ghi\"\ \"jk\')", "\n"},
+            {R"(ab\'\\cdef\'\"ghi\"\ \"jk\')" "\n"},
             {R"(ab'\cdef'"ghi" "jk')"}
     );
 }
 
 TEST(TokenizerTest, singleQuotes) {
     DoTest(
-            {R"('ab cd' '\')", "\n"},
+            {R"('ab cd' '\')" "\n"},
             {"ab cd", "\\"}
     );
 }
 
 TEST(TokenizerTest, doubleQuotes) {
     DoTest(
-            {R"("ab cd\"" gh\""ij")", "\n"},
+            {R"("ab cd\"" gh\""ij")" "\n"},
             {R"(ab cd")", R"(gh"ij)"}
     );
 }
 
 TEST(TokenizerTest, singleQuotesInsideDoubleQuotes) {
     DoTest(
-            {R"(ab"cd'\\' ef" "'gh\''")", "\n"},
+            {R"(ab"cd'\\' ef" "'gh\''")" "\n"},
             {R"(abcd'\' ef)", "'gh''"}
     );
 }

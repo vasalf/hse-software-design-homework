@@ -16,7 +16,7 @@
 
 #pragma once
 
-#include <common/escaped_char.h>
+#include <common/ext_char.h>
 #include <tokenize/token.h>
 
 #include <functional>
@@ -67,7 +67,7 @@ public:
         void PopState();
         void PushStateAndDelegate(TState* to);
         void PopStateAndDelegate();
-        void PushCharacter(TEscapedChar character);
+        void PushCharacter(TExtChar character);
         void StartToken();
         void EndToken();
 

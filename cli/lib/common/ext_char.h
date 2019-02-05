@@ -25,22 +25,34 @@ enum class ECharEscapeStatus {
     UNESCAPED
 };
 
-class TEscapedChar final {
-public:
-    explicit TEscapedChar(char c, ECharEscapeStatus escaped = ECharEscapeStatus::UNESCAPED);
+enum class ECharIgnoranceStatus {
+    NOTHING,
+    IGNORE_VARIABLES,
+    JUST_IGNORE
+};
 
-    ~TEscapedChar() = default;
-    TEscapedChar(const TEscapedChar&) = default;
-    TEscapedChar& operator=(const TEscapedChar&) = default;
-    TEscapedChar(TEscapedChar&&) noexcept = default;
-    TEscapedChar& operator=(TEscapedChar&&) noexcept = default;
+class TExtChar final {
+public:
+    explicit TExtChar(char c,
+                      ECharEscapeStatus escaped = ECharEscapeStatus::UNESCAPED,
+                      ECharIgnoranceStatus ignorance = ECharIgnoranceStatus::NOTHING);
+
+    ~TExtChar() = default;
+    TExtChar(const TExtChar&) = default;
+    TExtChar& operator=(const TExtChar&) = default;
+    TExtChar(TExtChar&&) noexcept = default;
+    TExtChar& operator=(TExtChar&&) noexcept = default;
 
     char ToChar() const;
     ECharEscapeStatus EscapeStatus() const;
+    ECharIgnoranceStatus IgnoranceStatus() const;
+
+    static TExtChar FakeDelim();
 
 private:
     char Char_;
     ECharEscapeStatus EscapeStatus_;
+    ECharIgnoranceStatus IgnoranceStatus_;
 };
 
 } // namespace NCli

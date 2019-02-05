@@ -14,22 +14,26 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "escaped_char.h"
+#pragma once
 
+#include <environment/environment.h>
+#include <tokenize/token.h>
 
 namespace NCli {
 
-TEscapedChar::TEscapedChar(char c, ECharEscapeStatus escaped)
-    : Char_(c)
-    , EscapeStatus_(escaped)
-{}
+class TVarExpander {
+public:
+    explicit TVarExpander(TEnvironment& environment);
 
-char TEscapedChar::ToChar() const {
-    return Char_;
-}
+    ~TVarExpander() = default;
+    TVarExpander(const TVarExpander&) = delete;
+    TVarExpander& operator=(const TVarExpander&) = delete;
+    TVarExpander(TVarExpander&&) noexcept = delete;
+    TVarExpander& operator=(TVarExpander&&) noexcept = delete;
 
-ECharEscapeStatus TEscapedChar::EscapeStatus() const {
-    return EscapeStatus_;
-}
+    std::vector<TToken> Expand(const std::vector<TToken>& tokens);
+private:
+    TEnvironment& Environment_;
+};
 
 } // namespace NCli

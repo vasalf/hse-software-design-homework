@@ -24,7 +24,7 @@ namespace {
 
 class TInvalidDFAStateException : std::runtime_error {
 public:
-    TInvalidDFAStateException(std::string component)
+    explicit TInvalidDFAStateException(const std::string& component)
         : std::runtime_error("Invalid DFA " + component + " state")
     {}
 };
@@ -37,6 +37,7 @@ public:
         ZeroState_ = MakeState();
         StateStack_.push(ZeroState_);
         TokenizerState_ = ETokenizerState::WAITING;
+        DelegateState_ = EDelegateState::STOP;
     }
 
     ~TImpl() {
@@ -103,7 +104,7 @@ public:
         DelegateState_ = EDelegateState::DELEGATE;
     }
 
-    void PushCharacter(TEscapedChar&& character) {
+    void PushCharacter(TExtChar character) {
         if (TokenizerState_ == ETokenizerState::WAITING) {
             throw TInvalidDFAStateException("token");
         }
@@ -213,8 +214,8 @@ void TTokenizeDFA::TExecCallback::PopStateAndDelegate() {
     DFAImpl_->PopStateAndDelegate();
 }
 
-void TTokenizeDFA::TExecCallback::PushCharacter(TEscapedChar character) {
-    DFAImpl_->PushCharacter(std::move(character));
+void TTokenizeDFA::TExecCallback::PushCharacter(TExtChar character) {
+    DFAImpl_->PushCharacter(character);
 }
 
 void TTokenizeDFA::TExecCallback::StartToken() {

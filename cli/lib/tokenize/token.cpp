@@ -22,25 +22,28 @@ std::string TToken::ToString() const {
     std::string ret;
     ret.reserve(Token_.size());
     for (std::size_t i = 0; i != Token_.size(); i++) {
+        if (Token_[i].IgnoranceStatus() == ECharIgnoranceStatus::JUST_IGNORE) {
+            continue;
+        }
         ret.push_back(Token_[i].ToChar());
     }
     return ret;
 }
 
-TEscapedChar& TToken::operator[](std::size_t i) {
+TExtChar& TToken::operator[](std::size_t i) {
     return Token_[i];
 }
 
-const TEscapedChar& TToken::operator[](std::size_t i) const {
+const TExtChar& TToken::operator[](std::size_t i) const {
     return Token_[i];
 }
 
-void TToken::PushBack(const TEscapedChar& character) {
+void TToken::PushBack(const TExtChar& character) {
     Token_.push_back(character);
 }
 
-void TToken::PushBack(TEscapedChar&& character) {
-    Token_.push_back(std::forward<TEscapedChar>(character));
+std::size_t TToken::Size() const {
+    return Token_.size();
 }
 
 } // namespace NCli

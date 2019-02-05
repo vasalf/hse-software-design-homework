@@ -14,36 +14,31 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#pragma once
+#include "ext_char.h"
 
-#include <common/ext_char.h>
-
-#include <string>
-#include <vector>
 
 namespace NCli {
 
-class TToken {
-public:
-    TToken() = default;
+TExtChar::TExtChar(char c, ECharEscapeStatus escaped, ECharIgnoranceStatus ignorance)
+    : Char_(c)
+    , EscapeStatus_(escaped)
+    , IgnoranceStatus_(ignorance)
+{}
 
-    ~TToken() = default;
-    TToken(const TToken&) = default;
-    TToken& operator=(const TToken&) = default;
-    TToken(TToken&&) noexcept = default;
-    TToken& operator=(TToken&&) noexcept = default;
+char TExtChar::ToChar() const {
+    return Char_;
+}
 
-    std::string ToString() const;
+ECharEscapeStatus TExtChar::EscapeStatus() const {
+    return EscapeStatus_;
+}
 
-    TExtChar& operator[](std::size_t i);
-    const TExtChar& operator[](std::size_t i) const;
+ECharIgnoranceStatus TExtChar::IgnoranceStatus() const {
+    return IgnoranceStatus_;
+}
 
-    void PushBack(const TExtChar& character);
-
-    std::size_t Size() const;
-
-private:
-    std::vector<TExtChar> Token_;
-};
+TExtChar TExtChar::FakeDelim() {
+    return TExtChar('\0', ECharEscapeStatus::UNESCAPED, ECharIgnoranceStatus::JUST_IGNORE);
+}
 
 } // namespace NCli

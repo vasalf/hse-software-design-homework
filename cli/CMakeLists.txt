@@ -7,10 +7,11 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/lib)
 
 add_library(lcli STATIC
     lib/cli.cpp
-    lib/common/escaped_char.cpp
+    lib/common/ext_char.cpp
     lib/tokenize/tokenize_dfa.cpp
     lib/tokenize/token.cpp
-        lib/tokenize/tokenizer.cpp lib/tokenize/tokenizer.h)
+    lib/tokenize/tokenizer.cpp
+        lib/environment/environment.cpp lib/environment/environment.h lib/environment/var_expander.cpp lib/environment/var_expander.h)
 
 add_executable(cli main.cpp)
 target_link_libraries(cli LINK_PUBLIC lcli)
@@ -24,6 +25,8 @@ find_package(GTest REQUIRED)
 enable_testing()
 
 add_executable(cli_test
-        test/sample_test.cpp test/tokenizer_test.cpp)
+    test/sample_test.cpp
+    test/tokenizer_test.cpp
+        test/environment_test.cpp test/var_expander_test.cpp)
 target_link_libraries(cli_test LINK_PUBLIC lcli gtest gtest_main)
 gtest_add_tests(cli_test "" AUTO)

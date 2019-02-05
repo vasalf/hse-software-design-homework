@@ -16,34 +16,32 @@
 
 #pragma once
 
-#include <common/ext_char.h>
-
+#include <map>
 #include <string>
-#include <vector>
 
 namespace NCli {
 
-class TToken {
+using TEnvironment = std::map<std::string, std::string>;
+
+TEnvironment LoadGlobalEnvironment(const char **envp);
+
+class TCmdEnvironment {
 public:
-    TToken() = default;
+    explicit TCmdEnvironment(TEnvironment& globalEnvironment);
 
-    ~TToken() = default;
-    TToken(const TToken&) = default;
-    TToken& operator=(const TToken&) = default;
-    TToken(TToken&&) noexcept = default;
-    TToken& operator=(TToken&&) noexcept = default;
+    ~TCmdEnvironment() = default;
+    TCmdEnvironment(const TCmdEnvironment&) = delete;
+    TCmdEnvironment& operator=(const TCmdEnvironment&) = delete;
+    TCmdEnvironment(TCmdEnvironment&&) noexcept = delete;
+    TCmdEnvironment& operator=(TCmdEnvironment&&) noexcept = delete;
 
-    std::string ToString() const;
-
-    TExtChar& operator[](std::size_t i);
-    const TExtChar& operator[](std::size_t i) const;
-
-    void PushBack(const TExtChar& character);
-
-    std::size_t Size() const;
+    const std::string& GetValue(const std::string& name) const;
+    void SetLocalValue(const std::string& name, const std::string& value);
 
 private:
-    std::vector<TExtChar> Token_;
+    TEnvironment& GlobalEnvironment_;
+    TEnvironment LocalEnvironment_;
+    std::string EmptyString_;
 };
 
 } // namespace NCli

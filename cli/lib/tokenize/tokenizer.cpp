@@ -49,23 +49,28 @@ public:
                     if (c == '\\') {
                         cb.PushState(Escape_);
                     } else if (c == '\'') {
+                        cb.PushCharacter(TExtChar::FakeDelim());
                         cb.PushState(SingleQuote_);
                     } else if (c == '"') {
+                        cb.PushCharacter(TExtChar::FakeDelim());
                         cb.PushState(DoubleQuote_);
                     } else if (std::isspace(c)) {
                         cb.EndToken();
                         cb.PopStateAndDelegate();
                     } else {
-                        cb.PushCharacter(TEscapedChar(c));
+                        cb.PushCharacter(TExtChar(c));
                     }
                 }
         );
         SingleQuote_->SetCallback(
                 [this](char c, TDFACallback& cb) {
                     if (c == '\'') {
+                        cb.PushCharacter(TExtChar::FakeDelim());
                         cb.PopState();
                     } else {
-                        cb.PushCharacter(TEscapedChar(c));
+                        cb.PushCharacter(TExtChar(c,
+                                                  ECharEscapeStatus::ESCAPED,
+                                                  ECharIgnoranceStatus::IGNORE_VARIABLES));
                     }
                 }
         );
@@ -74,16 +79,17 @@ public:
                     if (c == '\\') {
                         cb.PushState(Escape_);
                     } else if (c == '"') {
+                        cb.PushCharacter(TExtChar::FakeDelim());
                         cb.PopState();
                     } else {
-                        cb.PushCharacter(TEscapedChar(c));
+                        cb.PushCharacter(TExtChar(c));
                     }
                 }
         );
         Escape_->SetCallback(
                 [this](char c, TDFACallback& cb) {
                     if (c != '\n') {
-                        cb.PushCharacter(TEscapedChar(c, ECharEscapeStatus::ESCAPED));
+                        cb.PushCharacter(TExtChar(c, ECharEscapeStatus::ESCAPED));
                     }
                     cb.PopState();
                 }
