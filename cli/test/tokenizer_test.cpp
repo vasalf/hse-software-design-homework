@@ -15,15 +15,87 @@
  */
 
 #include <gtest/gtest.h>
+
 #include <tokenize/tokenizer.h>
+
+#include <string>
+#include <vector>
 
 using namespace NCli;
 
-TEST(TokenizerTest, smokeTest) {
-    TTokenizer tokenizer;
-    tokenizer.Update("a\n");
+namespace {
 
-    auto tokens = tokenizer.ParsedTokens();
-    ASSERT_EQ(1, tokens.size());
-    ASSERT_EQ("a", tokens[0].ToString());
+void DoTest(std::vector<std::string> test, std::vector<std::string> expected) {
+    TTokenizer tokenizer;
+    for (std::size_t i = 0; i != test.size(); i++) {
+        tokenizer.Update(test[i]);
+        if (i + 1 != test.size()) {
+            ASSERT_EQ(TTokenizer::EState::WAITING, tokenizer.State());
+        }
+    }
+    ASSERT_EQ(TTokenizer::EState::DONE, tokenizer.State());
+
+    auto actualTokens = tokenizer.ParsedTokens();
+    std::vector<std::string> actual;
+    actual.reserve(actualTokens.size());
+    for (const auto& t : actualTokens) {
+        actual.push_back(t.ToString());
+    }
+    ASSERT_EQ(expected, actual);
+}
+
+} // namespace <anonymous>
+
+TEST(TokenizerTest, oneToken) {
+    DoTest({"a\n"}, {"a"});
+}
+
+TEST(TokenizerTest, severalTokens) {
+    DoTest({"a b c   defgh  ij\n"}, {"a", "b", "c", "defgh", "ij"});
+}
+
+TEST(TokenizerTest, escapedEOL) {
+    DoTest(
+            {
+                    R"(a b\
+)",
+                    "c d\n"
+            },
+            {"a", "bc", "d"}
+    );
+}
+
+TEST(TokenizerTest, escapedSpace) {
+    DoTest(
+            {R"(abc\ def)", "\n"},
+            {"abc def"}
+    );
+}
+
+TEST(TokenizerTest, escapedQuotes) {
+    DoTest(
+            {R"(ab\'\\cdef\'\"ghi\"\ \"jk\')", "\n"},
+            {R"(ab'\cdef'"ghi" "jk')"}
+    );
+}
+
+TEST(TokenizerTest, singleQuotes) {
+    DoTest(
+            {R"('ab cd' '\')", "\n"},
+            {"ab cd", "\\"}
+    );
+}
+
+TEST(TokenizerTest, doubleQuotes) {
+    DoTest(
+            {R"("ab cd\"" gh\""ij")", "\n"},
+            {R"(ab cd")", R"(gh"ij)"}
+    );
+}
+
+TEST(TokenizerTest, singleQuotesInsideDoubleQuotes) {
+    DoTest(
+            {R"(ab"cd'\\' ef" "'gh\''")", "\n"},
+            {R"(abcd'\' ef)", "'gh''"}
+    );
 }
