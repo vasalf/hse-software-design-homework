@@ -32,6 +32,8 @@ TExecutorPtr TExecutorFactory::MakeExecutor(const std::string& command, TEnviron
         return std::make_shared<NPrivate::TCatExecutor>(globalEnvironment);
     } else if (command == "pwd") {
         return std::make_shared<NPrivate::TPwdExecutor>(globalEnvironment);
+    } else if (command == "wc") {
+        return std::make_shared<NPrivate::TWcExecutor>(globalEnvironment);
     } else {
         return std::make_shared<NPrivate::TExternalExecutor>(globalEnvironment);
     }

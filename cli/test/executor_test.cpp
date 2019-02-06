@@ -238,3 +238,20 @@ TEST(ExecutorTest, pwd) {
     executor->Execute(cmd, isw, os);
     ASSERT_EQ("/some/path\n", os.str());
 }
+
+TEST(ExecutorTest, wc) {
+    std::string INPUT = "some\n example\t FILE\n\n";
+
+    TEnvironment env;
+    TExecutorPtr executor = TExecutorFactory::MakeExecutor("wc", env);
+
+    std::istringstream is(INPUT);
+    TPipeIStreamWrapper isw(is);
+    std::ostringstream os;
+
+    TCommand cmd({});
+    MakeCommand("wc\n", cmd);
+
+    executor->Execute(cmd, isw, os);
+    ASSERT_EQ("\t3\t3\t21\n", os.str());
+}

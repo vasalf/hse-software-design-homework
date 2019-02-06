@@ -24,6 +24,7 @@
 #include <iostream>
 #include <filesystem>
 #include <fstream>
+#include <optional>
 
 #include <unistd.h>
 #include <sys/wait.h>
@@ -72,6 +73,15 @@ void CopyPipeContentsToOStream(const TPipe& pipe, std::ostream& os) {
     } while (status != 0);
 }
 
+std::optional<std::string> ResolveFilename(TEnvironment& env, std::string filename) {
+    namespace fs = std::filesystem;
+    fs::path probe = fs::path(env["PWD"]) / filename;
+    if (fs::exists(fs::path(env["PWD"]) / filename)) {
+        return probe;
+    }
+    return {};
+}
+
 } // namespace <anonymous>
 
 TCatExecutor::TCatExecutor(TEnvironment& environment)
@@ -108,10 +118,9 @@ void TCatExecutor::Execute(const TCommand& cmd, IIStreamWrapper& in, std::ostrea
                       std::istreambuf_iterator<char>(),
                       std::ostreambuf_iterator<char>(std::cout));
         } else {
-            namespace fs = std::filesystem;
-            fs::path file = fs::path(Environment_["PWD"]) / cmd.Args()[1];
-            if (fs::exists(file)) {
-                std::ifstream fin(file);
+            auto file = ResolveFilename(Environment_, cmd.Args()[1]);
+            if (file.has_value()) {
+                std::ifstream fin(file.value());
                 std::copy(std::istreambuf_iterator<char>(fin),
                           std::istreambuf_iterator<char>(),
                           std::ostreambuf_iterator<char>(std::cout));
@@ -144,6 +153,60 @@ void TPwdExecutor::Execute(const TCommand&, IIStreamWrapper&, std::ostream& os) 
     os << Environment_["PWD"] << std::endl;
 }
 
+TWcExecutor::TWcExecutor(TEnvironment& environment)
+    : Environment_(environment)
+{}
+
+void TWcExecutor::Execute(const TCommand& cmd, IIStreamWrapper& in, std::ostream& os) {
+    if (cmd.Args().size() > 2) {
+        throw std::runtime_error("wc: Too many arguments");
+    }
+
+    bool readFromStdin = cmd.Args().size() == 1 || cmd.Args()[1] == "-";
+
+    std::optional<std::string> resolvedFile = {};
+    if (!readFromStdin) {
+        resolvedFile = ResolveFilename(Environment_, cmd.Args()[1]);
+    }
+    if (!readFromStdin && !resolvedFile.has_value()) {
+        throw std::runtime_error("wc: " + cmd.Args()[1] + ": No such file or directory");
+    }
+    std::unique_ptr<std::istream> fs;
+    if (!readFromStdin) {
+        fs = std::make_unique<std::ifstream>(resolvedFile.value());
+    }
+
+    std::istream& readFrom = readFromStdin ? in.WrappedIStream() : *fs;
+
+    long lines = 0;
+    {
+        std::string s;
+        while (std::getline(readFrom, s)) {
+            lines++;
+        }
+        readFrom.clear();
+        readFrom.seekg(0, std::ios::beg);
+    }
+
+    long words = 0;
+    {
+        std::string s;
+        while (readFrom >> s) {
+            words++;
+        }
+        readFrom.clear();
+        readFrom.seekg(0, std::ios::beg);
+    }
+
+    long bytes = 0;
+    {
+        readFrom.seekg(0, std::ios::end);
+        bytes = readFrom.tellg();
+        readFrom.seekg(0, std::ios::beg);
+    }
+
+    os << "\t" << lines << "\t" << words << "\t" << bytes << std::endl;
+}
 
 } // namespace NPrivate
 } // namespace NCli

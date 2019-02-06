@@ -95,5 +95,21 @@ private:
     TEnvironment& Environment_;
 };
 
+class TWcExecutor final : public IExecutor {
+public:
+    explicit TWcExecutor(TEnvironment& environment);
+    ~TWcExecutor() override = default;
+
+    TWcExecutor(const TWcExecutor&) = delete;
+    TWcExecutor& operator=(const TWcExecutor&) = delete;
+    TWcExecutor(TWcExecutor&&) noexcept = delete;
+    TWcExecutor& operator=(TWcExecutor&&) noexcept = delete;
+
+    void Execute(const TCommand&, IIStreamWrapper&, std::ostream& os) override;
+
+private:
+    TEnvironment& Environment_;
+};
+
 } // namespace NPrivate
 } // namespace NCli
