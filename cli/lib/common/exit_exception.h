@@ -14,28 +14,17 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "builtin_executors.h"
+#pragma once
 
-#include <common/exit_exception.h>
+#include <exception>
 
 namespace NCli {
-namespace NPrivate {
 
-TAssignmentExecutor::TAssignmentExecutor(TEnvironment& env)
-    : Environment_(env)
-{}
+class TExitException : public std::exception {
+public:
+    TExitException();
 
-void TAssignmentExecutor::Execute(const TCommand& command, IIStreamWrapper&, std::ostream&) {
-    for (const auto& assignment : command.Assignments()) {
-        Environment_[assignment.Name] = assignment.Value;
-    }
+    const char* what() const noexcept override;
+};
+
 }
-
-TExitExecutor::TExitExecutor(TEnvironment&) {}
-
-void TExitExecutor::Execute(const TCommand&, IIStreamWrapper&, std::ostream& os) {
-    throw TExitException();
-}
-
-} // namespace NPrivate
-} // namespace NCli

@@ -16,6 +16,7 @@
 
 #include <gtest/gtest.h>
 
+#include <common/exit_exception.h>
 #include <executor/executor.h>
 #include <parser/parse.h>
 #include <tokenize/tokenizer.h>
@@ -101,4 +102,18 @@ TEST(ExecutorTest, manyAssignments) {
     ASSERT_EQ("value 1", env["VAR_1"]);
     ASSERT_EQ("value 2", env["VAR2"]);
     ASSERT_EQ("value 3", env["VAR_3"]);
+}
+
+TEST(ExecutorTest, exit) {
+    TEnvironment env;
+    TExecutorPtr executor = TExecutorFactory::MakeExecutor("exit", env);
+
+    std::istringstream is;
+    TPipeIStreamWrapper isw(is);
+    std::ostringstream os;
+
+    TCommand cmd({});
+    MakeCommand("exit\n", cmd);
+
+    ASSERT_THROW(executor->Execute(cmd, isw, os), TExitException);
 }

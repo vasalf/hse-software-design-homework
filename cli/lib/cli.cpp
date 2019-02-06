@@ -16,6 +16,7 @@
 
 #include "cli.h"
 
+#include <common/exit_exception.h>
 #include <environment/environment.h>
 #include <environment/var_expander.h>
 #include <executor/execute.h>
@@ -56,10 +57,12 @@ void RunMain(IIStreamWrapper& in, std::ostream& out, std::ostream& err, char* en
     while (!in.WrappedIStream().eof()) {
         try {
             LoopIteration(in, out, err, environment, varExpander);
+        } catch (TExitException&) {
+            break;
         } catch (std::exception& e) {
             err << e.what() << std::endl;
         } catch(...) {
-            err << "unknown error" << std::endl;
+            err << "cli: unknown error" << std::endl;
         }
     }
 }

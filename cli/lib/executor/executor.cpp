@@ -24,6 +24,8 @@ namespace NCli {
 TExecutorPtr TExecutorFactory::MakeExecutor(const std::string& command, TEnvironment& globalEnvironment) {
     if (command.empty()) {
         return std::make_shared<NPrivate::TAssignmentExecutor>(globalEnvironment);
+    } else if (command == "exit") {
+        return std::make_shared<NPrivate::TExitExecutor>(globalEnvironment);
     } else {
         return std::make_shared<NPrivate::TExternalExecutor>(globalEnvironment);
     }
