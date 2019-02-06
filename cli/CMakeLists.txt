@@ -44,6 +44,6 @@ add_executable(cli_test
     test/parse_test.cpp
     test/executor_test.cpp
     test/execute_test.cpp
-)
+        test/example_test.cpp)
 target_link_libraries(cli_test LINK_PUBLIC lcli gtest gtest_main)
 gtest_add_tests(cli_test "" AUTO)
