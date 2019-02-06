@@ -63,5 +63,21 @@ public:
     void Execute(const TCommand&, IIStreamWrapper&, std::ostream& os) override;
 };
 
+class TCatExecutor final : public IExecutor {
+public:
+    explicit TCatExecutor(TEnvironment& environment);
+    ~TCatExecutor() override = default;
+
+    TCatExecutor(const TCatExecutor&) = delete;
+    TCatExecutor& operator=(const TCatExecutor&) = delete;
+    TCatExecutor(TCatExecutor&&) noexcept = delete;
+    TCatExecutor& operator=(TCatExecutor&&) noexcept  = delete;
+
+    void Execute(const TCommand&, IIStreamWrapper&, std::ostream& os) override;
+
+private:
+    TEnvironment& Environment_;
+};
+
 } // namespace NPrivate
 } // namespace NCli

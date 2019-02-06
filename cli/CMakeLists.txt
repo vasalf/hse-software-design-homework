@@ -22,7 +22,7 @@ add_library(lcli STATIC
     lib/common/istream_wrapper.cpp
     lib/executor/private/builtin_executors.cpp
     lib/common/exit_exception.cpp
-)
+        lib/common/pipe.cpp lib/common/pipe.h)
 target_link_libraries(lcli LINK_PUBLIC stdc++fs)
 
 add_executable(cli main.cpp)

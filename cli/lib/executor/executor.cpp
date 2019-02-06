@@ -28,6 +28,8 @@ TExecutorPtr TExecutorFactory::MakeExecutor(const std::string& command, TEnviron
         return std::make_shared<NPrivate::TExitExecutor>(globalEnvironment);
     } else if (command == "echo") {
         return std::make_shared<NPrivate::TEchoExecutor>(globalEnvironment);
+    } else if (command == "cat") {
+        return std::make_shared<NPrivate::TCatExecutor>(globalEnvironment);
     } else {
         return std::make_shared<NPrivate::TExternalExecutor>(globalEnvironment);
     }

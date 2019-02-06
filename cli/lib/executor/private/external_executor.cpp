@@ -16,6 +16,7 @@
 
 #include "external_executor.h"
 
+#include <common/pipe.h>
 #include <tokenize/tokenize_dfa.h>
 
 #include <algorithm>
@@ -30,76 +31,6 @@
 namespace NCli {
 namespace NPrivate {
 namespace {
-
-class TPipe final {
-public:
-    TPipe() {
-        Direction_ = EDirection::UNSPECIFIED;
-        pipe(FD_);
-    }
-
-    ~TPipe() {
-        if (Status_[0] == EPipeEndStatus::OPEN) {
-            close(FD_[0]);
-        }
-        if (Status_[1] == EPipeEndStatus::OPEN) {
-            close(FD_[1]);
-        }
-    }
-
-    TPipe(const TPipe&) = delete;
-    TPipe& operator=(const TPipe&) = delete;
-    TPipe(TPipe&&) noexcept = default;
-    TPipe& operator=(TPipe&&) noexcept = default;
-
-    enum class EDirection {
-        UNSPECIFIED,
-        IN,
-        OUT
-    };
-
-    void RegisterDirection(EDirection direction) {
-        if (Direction_ != EDirection::UNSPECIFIED) {
-            throw std::logic_error("invalid pipe state");
-        }
-
-        Direction_ = direction;
-        if (direction == EDirection::IN) {
-            close(WriteEndDescriptor());
-            Status_[1] = EPipeEndStatus::CLOSED;
-        } else if (direction == EDirection::OUT) {
-            close(ReadEndDescriptor());
-            Status_[0] = EPipeEndStatus::CLOSED;
-        }
-    }
-
-    int ReadEndDescriptor() const {
-        return FD_[0];
-    }
-
-    int WriteEndDescriptor() const {
-        return FD_[1];
-    }
-
-    void CloseWriteEnd() {
-        if (Status_[1] == EPipeEndStatus::CLOSED) {
-            throw std::logic_error("invalid pipe end status");
-        }
-
-        close(WriteEndDescriptor());
-        Status_[1] = EPipeEndStatus::CLOSED;
-    }
-
-private:
-    enum class EPipeEndStatus {
-        OPEN,
-        CLOSED
-    };
-
-    int FD_[2]{};
-    EPipeEndStatus Status_[2] = {EPipeEndStatus::OPEN, EPipeEndStatus::OPEN};
-    EDirection Direction_;
-};
 
 void ThrowSystemError() {
     throw std::system_error(0, std::system_category());

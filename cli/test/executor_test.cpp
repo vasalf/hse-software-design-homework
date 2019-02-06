@@ -21,6 +21,8 @@
 #include <parser/parse.h>
 #include <tokenize/tokenizer.h>
 
+#include <filesystem>
+#include <fstream>
 #include <sstream>
 
 using namespace NCli;
@@ -162,4 +164,61 @@ TEST(ExecutorTest, echoManyArgs) {
 
     executor->Execute(cmd, isw, os);
     ASSERT_EQ("a  bcd ef\\\n", os.str());
+}
+
+namespace {
+
+void DoCatStdinTest(std::string command) {
+    std::string INPUT = "some\n  input";
+
+    TEnvironment env;
+    TExecutorPtr executor = TExecutorFactory::MakeExecutor("cat", env);
+
+    std::istringstream is(INPUT);
+    TPipeIStreamWrapper isw(is);
+    std::ostringstream os;
+
+    TCommand cmd({});
+    MakeCommand(std::move(command), cmd);
+
+    executor->Execute(cmd, isw, os);
+    ASSERT_EQ(INPUT, os.str());
+}
+
+} // namespace <anonymous>
+
+TEST(ExecutorTest, catWithNoArgs) {
+    DoCatStdinTest("cat\n");
+}
+
+TEST(ExecutorTest, catMinus) {
+    DoCatStdinTest("cat -\n");
+}
+
+TEST(ExecutorTest, catFile) {
+    std::string INPUT = "some\n input in the file";
+
+    std::string filename = "tempXXXXXX";
+    int fd = mkstemp(const_cast<char*>(filename.c_str()));
+    {
+        std::ofstream out(filename);
+        out << INPUT;
+    }
+
+    TEnvironment env;
+    env["PWD"] = getenv("PWD");
+    TExecutorPtr executor = TExecutorFactory::MakeExecutor("cat", env);
+
+    std::istringstream is;
+    TPipeIStreamWrapper isw(is);
+    std::ostringstream os;
+
+    TCommand cmd({});
+    MakeCommand("cat " + filename + "\n", cmd);
+
+    executor->Execute(cmd, isw, os);
+    ASSERT_EQ(INPUT, os.str());
+
+    close(fd);
+    std::filesystem::remove(std::filesystem::path(filename));
 }
