@@ -31,9 +31,8 @@ TEnvironment LoadGlobalEnvironment(const char** envp) {
     for (const char** varval = envp; *varval != nullptr; varval++) {
         auto assignment = ParseEnvVarAssignment(std::string(*varval));
         if (assignment.has_value()) {
+            std::cerr << assignment.value().Name << "=" << assignment.value().Value << std::endl;
             ret[assignment.value().Name] = assignment.value().Value;
-        } else {
-            std::cerr << "failed to parse environment variable: " << *varval << std::endl;
         }
     }
 

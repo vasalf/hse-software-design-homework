@@ -16,7 +16,9 @@
 
 #include <cli.h>
 
-int main() {
-    NCli::RunMain();
+#include <iostream>
+
+int main(int argc, char* argv[], char* envp[]) {
+    NCli::RunMain(std::cin, std::cout, std::cerr, envp);
     return 0;
 }

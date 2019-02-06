@@ -16,8 +16,10 @@
 
 #pragma once
 
+#include <iostream>
+
 namespace NCli {
 
-void RunMain();
+void RunMain(std::istream& is, std::ostream& os, std::ostream& err, char* envp[]);
 
 } // namespace NCli
