@@ -7,7 +7,7 @@ before_install:
     - sudo apt-get update
 
 install:
-    - sudo apt-get install -qq g++-7 cmake
+    - sudo apt-get install -qq g++-7 cmake libgtest-dev
     - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-7 90
 
 script:
