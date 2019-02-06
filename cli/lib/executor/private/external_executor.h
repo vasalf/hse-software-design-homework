@@ -18,7 +18,6 @@
 
 #include <executor/executor.h>
 
-
 namespace NCli {
 namespace NPrivate {
 

@@ -18,7 +18,7 @@ add_library(lcli STATIC
     lib/common/char_utils.cpp
     lib/executor/executor.cpp
     lib/executor/private/external_executor.cpp
-        lib/executor/execute.cpp lib/executor/execute.h lib/common/istream_wrapper.cpp lib/common/istream_wrapper.h)
+        lib/executor/execute.cpp lib/executor/execute.h lib/common/istream_wrapper.cpp lib/common/istream_wrapper.h lib/executor/private/builtin_executors.cpp)
 target_link_libraries(lcli LINK_PUBLIC stdc++fs)
 
 add_executable(cli main.cpp)

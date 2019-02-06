@@ -45,7 +45,7 @@ using TExecutorPtr = std::shared_ptr<IExecutor>;
 
 class TExecutorFactory {
 public:
-    static TExecutorPtr MakeExecutor(std::string command, TEnvironment& globalEnvironment);
+    static TExecutorPtr MakeExecutor(const std::string& command, TEnvironment& globalEnvironment);
 };
 
 void UpdateCmdEnvironment(TCmdEnvironment& env, const TCommand& command);

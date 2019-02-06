@@ -14,25 +14,20 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "executor.h"
-
-#include <executor/private/external_executor.h>
-#include <executor/private/builtin_executors.h>
+#include "builtin_executors.h"
 
 namespace NCli {
+namespace NPrivate {
 
-TExecutorPtr TExecutorFactory::MakeExecutor(const std::string& command, TEnvironment& globalEnvironment) {
-    if (command.empty()) {
-        return std::make_shared<NPrivate::TAssignmentExecutor>(globalEnvironment);
-    } else {
-        return std::make_shared<NPrivate::TExternalExecutor>(globalEnvironment);
-    }
-}
+TAssignmentExecutor::TAssignmentExecutor(TEnvironment& env)
+    : Environment_(env)
+{}
 
-void UpdateCmdEnvironment(TCmdEnvironment& env, const TCommand& command) {
+void TAssignmentExecutor::Execute(const TCommand& command, IIStreamWrapper&, std::ostream&) {
     for (const auto& assignment : command.Assignments()) {
-        env.SetLocalValue(assignment.Name, assignment.Value);
+        Environment_[assignment.Name] = assignment.Value;
     }
 }
 
+} // namespace NPrivate
 } // namespace NCli

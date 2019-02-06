@@ -56,3 +56,7 @@ TEST(ExecuteTest, pipedCatMinuses) {
 TEST(ExecuteTest, destroyedStdout) {
     DoTest("cat - | echo \"TOP SECRET\"\n", "UNEXPECTED", "TOP SECRET\n");
 }
+
+TEST(ExecuteTest, testOneAssignment) {
+    DoTest("FILE=example.txt\n", "", "");
+}

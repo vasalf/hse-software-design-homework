@@ -68,3 +68,37 @@ TEST(ExecutorTest, catMinusAsExternalCommand) {
 
     ASSERT_EQ("Hey there!\n", os.str());
 }
+
+TEST(ExecutorTest, oneAssignment) {
+    TEnvironment env;
+    TExecutorPtr executor = TExecutorFactory::MakeExecutor("", env);
+
+    std::istringstream is;
+    TPipeIStreamWrapper isw(is);
+    std::ostringstream os;
+
+    TCommand cmd({});
+    MakeCommand("FILE=example.txt\n", cmd);
+
+    executor->Execute(cmd, isw, os);
+
+    ASSERT_EQ("example.txt", env["FILE"]);
+}
+
+TEST(ExecutorTest, manyAssignments) {
+    TEnvironment env;
+    TExecutorPtr executor = TExecutorFactory::MakeExecutor("", env);
+
+    std::istringstream is;
+    TPipeIStreamWrapper isw(is);
+    std::ostringstream os;
+
+    TCommand cmd({});
+    MakeCommand(R"(VAR_1="value 1"  VAR2='value 2' VAR_3=value\ 3)" "\n", cmd);
+
+    executor->Execute(cmd, isw, os);
+
+    ASSERT_EQ("value 1", env["VAR_1"]);
+    ASSERT_EQ("value 2", env["VAR2"]);
+    ASSERT_EQ("value 3", env["VAR_3"]);
+}

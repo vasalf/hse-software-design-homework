@@ -27,7 +27,9 @@ TCommand::TCommand(std::vector<std::string> cmdline) {
         while (it != cmdline.end() && assignment.has_value()) {
             Assignments_.push_back(assignment.value());
             it++;
-            assignment = ParseEnvVarAssignment(*it);
+            if (it != cmdline.end()) {
+                assignment = ParseEnvVarAssignment(*it);
+            }
         }
         std::copy(it, cmdline.end(), std::back_inserter(Cmdline_));
     }

@@ -14,25 +14,28 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "executor.h"
+#pragma once
 
-#include <executor/private/external_executor.h>
-#include <executor/private/builtin_executors.h>
+#include <executor/executor.h>
 
 namespace NCli {
+namespace NPrivate {
 
-TExecutorPtr TExecutorFactory::MakeExecutor(const std::string& command, TEnvironment& globalEnvironment) {
-    if (command.empty()) {
-        return std::make_shared<NPrivate::TAssignmentExecutor>(globalEnvironment);
-    } else {
-        return std::make_shared<NPrivate::TExternalExecutor>(globalEnvironment);
-    }
-}
+class TAssignmentExecutor final : public IExecutor {
+public:
+    TAssignmentExecutor(TEnvironment& env);
 
-void UpdateCmdEnvironment(TCmdEnvironment& env, const TCommand& command) {
-    for (const auto& assignment : command.Assignments()) {
-        env.SetLocalValue(assignment.Name, assignment.Value);
-    }
-}
+    ~TAssignmentExecutor() override = default;
+    TAssignmentExecutor(const TAssignmentExecutor&) = delete;
+    TAssignmentExecutor& operator=(const TAssignmentExecutor&) = delete;
+    TAssignmentExecutor(TAssignmentExecutor&&) = delete;
+    TAssignmentExecutor& operator=(TAssignmentExecutor&&) = delete;
 
+    void Execute(const TCommand& command, IIStreamWrapper& in, std::ostream& os);
+
+private:
+    TEnvironment& Environment_;
+};
+
+} // namespace NPrivate
 } // namespace NCli
