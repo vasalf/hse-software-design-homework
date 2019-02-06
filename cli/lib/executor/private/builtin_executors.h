@@ -71,7 +71,23 @@ public:
     TCatExecutor(const TCatExecutor&) = delete;
     TCatExecutor& operator=(const TCatExecutor&) = delete;
     TCatExecutor(TCatExecutor&&) noexcept = delete;
-    TCatExecutor& operator=(TCatExecutor&&) noexcept  = delete;
+    TCatExecutor& operator=(TCatExecutor&&) noexcept = delete;
+
+    void Execute(const TCommand&, IIStreamWrapper&, std::ostream& os) override;
+
+private:
+    TEnvironment& Environment_;
+};
+
+class TPwdExecutor final : public IExecutor {
+public:
+    explicit TPwdExecutor(TEnvironment& environment);
+    ~TPwdExecutor() override = default;
+
+    TPwdExecutor(const TPwdExecutor&) = delete;
+    TPwdExecutor& operator=(const TPwdExecutor&) = delete;
+    TPwdExecutor(TPwdExecutor&&) noexcept = delete;
+    TPwdExecutor& operator=(TPwdExecutor&&) noexcept = delete;
 
     void Execute(const TCommand&, IIStreamWrapper&, std::ostream& os) override;
 

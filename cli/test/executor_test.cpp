@@ -222,3 +222,19 @@ TEST(ExecutorTest, catFile) {
     close(fd);
     std::filesystem::remove(std::filesystem::path(filename));
 }
+
+TEST(ExecutorTest, pwd) {
+    TEnvironment env;
+    env["PWD"] = "/some/path";
+    TExecutorPtr executor = TExecutorFactory::MakeExecutor("pwd", env);
+
+    std::istringstream is;
+    TPipeIStreamWrapper isw(is);
+    std::ostringstream os;
+
+    TCommand cmd({});
+    MakeCommand("pwd\n", cmd);
+
+    executor->Execute(cmd, isw, os);
+    ASSERT_EQ("/some/path\n", os.str());
+}

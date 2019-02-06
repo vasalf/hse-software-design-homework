@@ -136,5 +136,14 @@ void TCatExecutor::Execute(const TCommand& cmd, IIStreamWrapper& in, std::ostrea
     }
 }
 
+TPwdExecutor::TPwdExecutor(TEnvironment& environment)
+    : Environment_(environment)
+{}
+
+void TPwdExecutor::Execute(const TCommand&, IIStreamWrapper&, std::ostream& os) {
+    os << Environment_["PWD"] << std::endl;
+}
+
+
 } // namespace NPrivate
 } // namespace NCli
