@@ -130,6 +130,10 @@ public:
         TokenizerState_ = ETokenizerState::WAITING;
     }
 
+    bool TokenStarted() {
+        return TokenizerState_ == ETokenizerState::WRITING;
+    }
+
 private:
     enum class ETokenizerState {
         WRITING,
@@ -229,5 +233,9 @@ void TTokenizeDFA::TExecCallback::EndToken() {
 TTokenizeDFA::TExecCallback::TExecCallback(TTokenizeDFA::TImpl* dfa)
     : DFAImpl_(dfa)
 {}
+
+bool TTokenizeDFA::TExecCallback::TokenStarted() {
+    return DFAImpl_->TokenStarted();
+}
 
 } // namespace NCli

@@ -14,8 +14,11 @@ add_library(lcli STATIC
     lib/environment/environment.cpp
     lib/environment/var_expander.cpp
     lib/parser/command.cpp
-        lib/parser/parse.cpp
-        lib/common/char_utils.h lib/common/char_utils.cpp lib/executor/executor.cpp lib/executor/executor.h)
+    lib/parser/parse.cpp
+    lib/common/char_utils.cpp
+    lib/executor/executor.cpp
+)
+target_link_libraries(lcli LINK_PUBLIC stdc++fs)
 
 add_executable(cli main.cpp)
 target_link_libraries(cli LINK_PUBLIC lcli)
@@ -31,6 +34,11 @@ enable_testing()
 add_executable(cli_test
     test/sample_test.cpp
     test/tokenizer_test.cpp
-        test/environment_test.cpp test/var_expander_test.cpp test/command_test.cpp test/parse_test.cpp)
+    test/environment_test.cpp
+    test/var_expander_test.cpp
+    test/command_test.cpp
+    test/parse_test.cpp
+    test/executor_test.cpp
+)
 target_link_libraries(cli_test LINK_PUBLIC lcli gtest gtest_main)
 gtest_add_tests(cli_test "" AUTO)

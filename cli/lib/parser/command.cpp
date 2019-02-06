@@ -33,7 +33,7 @@ TCommand::TCommand(std::vector<std::string> cmdline) {
     }
 }
 
-const std::string& TCommand::Command() {
+const std::string& TCommand::Command() const {
     if (!Cmdline_.empty()) {
         return Cmdline_[0];
     } else {
@@ -42,11 +42,11 @@ const std::string& TCommand::Command() {
     }
 }
 
-const std::vector<std::string>& TCommand::Args() {
+const std::vector<std::string>& TCommand::Args() const {
     return Cmdline_;
 }
 
-const std::vector<TAssignment>& TCommand::Assignments() {
+const std::vector<TAssignment>& TCommand::Assignments() const {
     return Assignments_;
 }
 

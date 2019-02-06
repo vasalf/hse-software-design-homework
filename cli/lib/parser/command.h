@@ -33,10 +33,9 @@ public:
     TCommand(TCommand&&) noexcept = default;
     TCommand& operator=(TCommand&&) noexcept = default;
 
-    const std::string& Command();
-    const std::vector<std::string>& Args();
-
-    const std::vector<TAssignment>& Assignments();
+    const std::string& Command() const;
+    const std::vector<std::string>& Args() const;
+    const std::vector<TAssignment>& Assignments()const;
 
 private:
     std::vector<TAssignment> Assignments_;

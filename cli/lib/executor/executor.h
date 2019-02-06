@@ -19,22 +19,32 @@
 #include <environment/environment.h>
 #include <parser/parse.h>
 
+#include <memory>
+#include <string>
+
 namespace NCli {
 
-class TExecutor final {
+class TCommandNotFoundException final : public std::runtime_error {
 public:
-    TExecutor(TEnvironment& environment);
+    explicit TCommandNotFoundException(const std::string& command)
+            : std::runtime_error(command + ": command not found")
+    {}
 
-    ~TExecutor() = default;
-    TExecutor(const TExecutor&) = delete;
-    TExecutor& operator=(const TExecutor&) = delete;
-    TExecutor(TExecutor&&) noexcept = delete;
-    TExecutor& operator=(TExecutor&&) noexcept = delete;
+    ~TCommandNotFoundException() override = default;
+};
 
-    void Execute(const TFullCommand& command, std::istream& in, std::ostream& out);
+class IExecutor {
+public:
+    virtual ~IExecutor() = default;
 
-private:
-    TEnvironment& Environment_;
+    virtual void Execute(const TCommand& command, std::istream& in, std::ostream& out) = 0;
+};
+
+using TExecutorPtr = std::shared_ptr<IExecutor>;
+
+class TExecutorFactory {
+public:
+    static TExecutorPtr MakeExecutor(std::string command, TEnvironment& globalEnvironment);
 };
 
 } // namespace NCli

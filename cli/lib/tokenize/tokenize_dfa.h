@@ -70,6 +70,7 @@ public:
         void PushCharacter(TExtChar character);
         void StartToken();
         void EndToken();
+        bool TokenStarted();
 
     private:
         explicit TExecCallback(TTokenizeDFA::TImpl*);

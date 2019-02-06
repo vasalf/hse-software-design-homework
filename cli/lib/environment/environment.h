@@ -34,7 +34,7 @@ using TEnvironment = std::map<std::string, std::string>;
 
 TEnvironment LoadGlobalEnvironment(const char **envp);
 
-class TCmdEnvironment {
+class TCmdEnvironment final {
 public:
     explicit TCmdEnvironment(TEnvironment& globalEnvironment);
 
