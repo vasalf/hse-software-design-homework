@@ -18,7 +18,7 @@ add_library(lcli STATIC
     lib/common/char_utils.cpp
     lib/executor/executor.cpp
     lib/executor/private/external_executor.cpp
-)
+        lib/executor/execute.cpp lib/executor/execute.h)
 target_link_libraries(lcli LINK_PUBLIC stdc++fs)
 
 add_executable(cli main.cpp)
@@ -40,6 +40,6 @@ add_executable(cli_test
     test/command_test.cpp
     test/parse_test.cpp
     test/executor_test.cpp
-)
+        test/execute_test.cpp)
 target_link_libraries(cli_test LINK_PUBLIC lcli gtest gtest_main)
 gtest_add_tests(cli_test "" AUTO)

@@ -31,7 +31,7 @@ namespace NCli {
 namespace NPrivate {
 namespace {
 
-class TPipe {
+class TPipe final {
 public:
     TPipe() {
         Direction_ = EDirection::UNSPECIFIED;
