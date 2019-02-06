@@ -16,6 +16,7 @@
 
 #pragma once
 
+#include <common/istream_wrapper.h>
 #include <environment/environment.h>
 #include <parser/parse.h>
 
@@ -37,7 +38,7 @@ class IExecutor {
 public:
     virtual ~IExecutor() = default;
 
-    virtual void Execute(const TCommand& command, std::istream& in, std::ostream& out) = 0;
+    virtual void Execute(const TCommand& command, IIStreamWrapper& in, std::ostream& out) = 0;
 };
 
 using TExecutorPtr = std::shared_ptr<IExecutor>;

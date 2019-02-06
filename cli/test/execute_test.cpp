@@ -33,11 +33,12 @@ void DoTest(std::string command, std::string in, std::string expectedOut) {
     TFullCommand cmd = Parse(tokenizer.ParsedTokens());
 
     std::istringstream input(in);
+    TPipeIStreamWrapper inputWrapper(input);
     std::ostringstream output;
 
     TEnvironment env;
     env["PATH"] = getenv("PATH");
-    Execute(cmd, env, input, output);
+    Execute(cmd, env, inputWrapper, output);
 
     ASSERT_EQ(expectedOut, output.str());
 }

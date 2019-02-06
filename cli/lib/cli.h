@@ -17,9 +17,10 @@
 #pragma once
 
 #include <iostream>
+#include <common/istream_wrapper.h>
 
 namespace NCli {
 
-void RunMain(std::istream& is, std::ostream& os, std::ostream& err, char* envp[]);
+void RunMain(IIStreamWrapper& is, std::ostream& os, std::ostream& err, char* envp[]);
 
 } // namespace NCli

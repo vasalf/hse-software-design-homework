@@ -31,18 +31,20 @@ TExecutorPtr SelectExecutor(const TCommand& command, TEnvironment& environment) 
 
 } // namespace <anonymous>
 
-void Execute(const TFullCommand& fullCommand, TEnvironment& environment, std::istream& in, std::ostream& out) {
+void Execute(const TFullCommand& fullCommand, TEnvironment& environment, IIStreamWrapper& in, std::ostream& out) {
     if (fullCommand.empty()) {
         return;
     }
 
     std::vector<std::stringstream> intermediateStreams(fullCommand.size() - 1);
-    std::vector<std::istream*> istreams(fullCommand.size());
+    std::vector<std::shared_ptr<IIStreamWrapper>> intermediateIStreamWrappers(fullCommand.size() - 1);
+    std::vector<IIStreamWrapper*> istreams(fullCommand.size());
     std::vector<std::ostream*> ostreams(fullCommand.size());
 
     istreams[0] = &in;
     for (std::size_t i = 1; i != fullCommand.size(); i++) {
-        istreams[i] = &intermediateStreams[i - 1];
+        intermediateIStreamWrappers[i - 1] = std::make_shared<TPipeIStreamWrapper>(intermediateStreams[i - 1]);
+        istreams[i] = intermediateIStreamWrappers[i - 1].get();
     }
     ostreams.back() = &out;
     for (std::size_t i = 0; i + 1 != fullCommand.size(); i++) {

@@ -46,7 +46,8 @@ TEST(ExecutorTest, echoAsExternalCommand) {
     TCommand cmd({});
     MakeCommand("echo -n abc   def\n", cmd);
 
-    executor->Execute(cmd, is, os);
+    TPipeIStreamWrapper isw(is);
+    executor->Execute(cmd, isw, os);
 
     ASSERT_EQ("abc def", os.str());
 }
@@ -62,7 +63,8 @@ TEST(ExecutorTest, catMinusAsExternalCommand) {
     TCommand cmd({});
     MakeCommand("cat -\n", cmd);
 
-    executor->Execute(cmd, is, os);
+    TPipeIStreamWrapper isw(is);
+    executor->Execute(cmd, isw, os);
 
     ASSERT_EQ("Hey there!\n", os.str());
 }

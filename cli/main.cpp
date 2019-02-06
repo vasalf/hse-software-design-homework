@@ -15,10 +15,12 @@
  */
 
 #include <cli.h>
+#include <common/istream_wrapper.h>
 
 #include <iostream>
 
 int main(int argc, char* argv[], char* envp[]) {
-    NCli::RunMain(std::cin, std::cout, std::cerr, envp);
+    NCli::TStdinIStreamWrapper in(std::cin);
+    NCli::RunMain(in, std::cout, std::cerr, envp);
     return 0;
 }

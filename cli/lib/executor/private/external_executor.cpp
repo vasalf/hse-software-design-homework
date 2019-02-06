@@ -108,10 +108,8 @@ void ThrowSystemError() {
 void DoExecute(const std::string& command,
                const std::vector<std::string>& args,
                const std::vector<std::string>& environment,
-               std::istream& in,
+               IIStreamWrapper& in,
                std::ostream& out) {
-    std::string input;
-    std::copy(std::istreambuf_iterator<char>(in), std::istreambuf_iterator<char>(), std::back_inserter(input));
     TPipe childStdin;
     TPipe childStdout;
 
@@ -120,7 +118,7 @@ void DoExecute(const std::string& command,
         // child
 
         childStdin.RegisterDirection(TPipe::EDirection::IN);
-        if (dup2(childStdin.ReadEndDescriptor(), STDIN_FILENO) == -1) {
+        if (in.Dup(childStdin.ReadEndDescriptor(), STDIN_FILENO) == -1) {
             ThrowSystemError();
         }
 
@@ -150,7 +148,7 @@ void DoExecute(const std::string& command,
         childStdin.RegisterDirection(TPipe::EDirection::OUT);
         childStdout.RegisterDirection(TPipe::EDirection::IN);
 
-        write(childStdin.WriteEndDescriptor(), input.c_str(), input.size());
+        in.CopyContentToFile(childStdin.WriteEndDescriptor());
         childStdin.CloseWriteEnd();
 
         waitpid(pid, nullptr, 0);
@@ -216,7 +214,7 @@ TExternalExecutor::TExternalExecutor(TEnvironment& globalEnv)
         : GlobalEnv_(globalEnv)
 {}
 
-void TExternalExecutor::Execute(const TCommand& command, std::istream& in, std::ostream& out) {
+void TExternalExecutor::Execute(const TCommand& command, IIStreamWrapper& in, std::ostream& out) {
     TCmdEnvironment cmdEnvironment(GlobalEnv_);
     UpdateCmdEnvironment(cmdEnvironment, command);
     DoExecute(FindPath(cmdEnvironment, command.Command()), command.Args(), cmdEnvironment.ToEnvP(), in, out);

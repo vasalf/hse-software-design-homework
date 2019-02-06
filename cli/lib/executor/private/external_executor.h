@@ -32,7 +32,7 @@ public:
     TExternalExecutor(TExternalExecutor&&) = delete;
     TExternalExecutor& operator=(TExternalExecutor&&) = delete;
 
-    void Execute(const TCommand& command, std::istream& in, std::ostream& out) override;
+    void Execute(const TCommand& command, IIStreamWrapper& in, std::ostream& out) override;
 
 private:
     TEnvironment& GlobalEnv_;

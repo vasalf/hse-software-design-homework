@@ -16,10 +16,11 @@
 
 #pragma once
 
+#include <common/istream_wrapper.h>
 #include <parser/parse.h>
 
 namespace NCli {
 
-void Execute(const TFullCommand& fullCommand, TEnvironment& environment, std::istream& in, std::ostream& out);
+void Execute(const TFullCommand& fullCommand, TEnvironment& environment, IIStreamWrapper& in, std::ostream& out);
 
 } // namespace NCli

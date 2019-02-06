@@ -25,7 +25,7 @@
 namespace NCli {
 namespace {
 
-void LoopIteration(std::istream& in,
+void LoopIteration(IIStreamWrapper& in,
                    std::ostream& out,
                    std::ostream& err,
                    TEnvironment& env,
@@ -36,7 +36,7 @@ void LoopIteration(std::istream& in,
         out << "> ";
         out.flush();
         std::string s;
-        std::getline(in, s);
+        std::getline(in.WrappedIStream(), s);
         s += "\n";
         tokenizer.Update(s);
     } while (tokenizer.State() == TTokenizer::EState::WAITING);
@@ -50,10 +50,10 @@ void LoopIteration(std::istream& in,
 
 } // namespace <anonymous>
 
-void RunMain(std::istream& in, std::ostream& out, std::ostream& err, char* envp[]) {
+void RunMain(IIStreamWrapper& in, std::ostream& out, std::ostream& err, char* envp[]) {
     TEnvironment environment = LoadGlobalEnvironment(const_cast<const char**>(envp));
     TVarExpander varExpander(environment);
-    while (!in.eof()) {
+    while (!in.WrappedIStream().eof()) {
         try {
             LoopIteration(in, out, err, environment, varExpander);
         } catch (std::exception& e) {
