@@ -117,3 +117,49 @@ TEST(ExecutorTest, exit) {
 
     ASSERT_THROW(executor->Execute(cmd, isw, os), TExitException);
 }
+
+TEST(ExecutorTest, echoNothing) {
+    TEnvironment env;
+    TExecutorPtr executor = TExecutorFactory::MakeExecutor("echo", env);
+
+    std::istringstream is("ignored");
+    TPipeIStreamWrapper isw(is);
+    std::ostringstream os;
+
+    TCommand cmd({});
+    MakeCommand("echo\n", cmd);
+
+    executor->Execute(cmd, isw, os);
+
+    ASSERT_EQ("\n", os.str());
+}
+
+TEST(ExecutorTest, echoOneArg) {
+    TEnvironment env;
+    TExecutorPtr executor = TExecutorFactory::MakeExecutor("echo", env);
+
+    std::istringstream is("ignored");
+    TPipeIStreamWrapper isw(is);
+    std::ostringstream os;
+
+    TCommand cmd({});
+    MakeCommand(R"(echo "abc def"\ 'ghi jkl')" "\n", cmd);
+
+    executor->Execute(cmd, isw, os);
+    ASSERT_EQ("abc def ghi jkl\n", os.str());
+}
+
+TEST(ExecutorTest, echoManyArgs) {
+    TEnvironment env;
+    TExecutorPtr executor = TExecutorFactory::MakeExecutor("echo", env);
+
+    std::istringstream is("ignored");
+    TPipeIStreamWrapper isw(is);
+    std::ostringstream os;
+
+    TCommand cmd({});
+    MakeCommand(R"(echo a\   bcd 'ef\')" "\n", cmd);
+
+    executor->Execute(cmd, isw, os);
+    ASSERT_EQ("a  bcd ef\\\n", os.str());
+}

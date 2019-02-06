@@ -23,7 +23,7 @@ namespace NPrivate {
 
 class TAssignmentExecutor final : public IExecutor {
 public:
-    TAssignmentExecutor(TEnvironment& env);
+    explicit TAssignmentExecutor(TEnvironment& env);
 
     ~TAssignmentExecutor() override = default;
     TAssignmentExecutor(const TAssignmentExecutor&) = delete;
@@ -39,7 +39,7 @@ private:
 
 class TExitExecutor final : public IExecutor {
 public:
-    TExitExecutor(TEnvironment&);
+    explicit TExitExecutor(TEnvironment&);
     ~TExitExecutor() override = default;
 
     TExitExecutor(const TExitExecutor&) = delete;
@@ -48,6 +48,19 @@ public:
     TExitExecutor& operator=(TExitExecutor&&) noexcept = delete;
 
     void Execute(const TCommand&, IIStreamWrapper&, std::ostream& os);
+};
+
+class TEchoExecutor final : public IExecutor {
+public:
+    explicit TEchoExecutor(TEnvironment&);
+    ~TEchoExecutor() override = default;
+
+    TEchoExecutor(const TEchoExecutor&) = delete;
+    TEchoExecutor& operator=(const TEchoExecutor&) = delete;
+    TEchoExecutor(TEchoExecutor&&) noexcept = delete;
+    TEchoExecutor& operator=(TEchoExecutor&&) noexcept = delete;
+
+    void Execute(const TCommand&, IIStreamWrapper&, std::ostream& os) override;
 };
 
 } // namespace NPrivate

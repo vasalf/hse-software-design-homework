@@ -18,6 +18,8 @@
 
 #include <common/exit_exception.h>
 
+#include <iomanip>
+
 namespace NCli {
 namespace NPrivate {
 
@@ -33,8 +35,20 @@ void TAssignmentExecutor::Execute(const TCommand& command, IIStreamWrapper&, std
 
 TExitExecutor::TExitExecutor(TEnvironment&) {}
 
-void TExitExecutor::Execute(const TCommand&, IIStreamWrapper&, std::ostream& os) {
+void TExitExecutor::Execute(const TCommand&, IIStreamWrapper&, std::ostream&) {
     throw TExitException();
+}
+
+TEchoExecutor::TEchoExecutor(TEnvironment&) {}
+
+void TEchoExecutor::Execute(const TCommand& cmd, IIStreamWrapper&, std::ostream& os) {
+    for (std::size_t i = 1; i < cmd.Args().size() - 1; i++) {
+        os << cmd.Args()[i] << " ";
+    }
+    if (cmd.Args().size() > 1) {
+        os << cmd.Args().back();
+    }
+    os << std::endl;
 }
 
 } // namespace NPrivate
