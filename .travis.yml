@@ -9,9 +9,9 @@ before_install:
 install:
     - sudo apt-get install -qq g++-7 cmake libgtest-dev
     - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-7 90
-    - cmake /usr/src/gtest/CMakeLists.txt
-    - make -C /usr/src/gtest
-    - cp /usr/src/gtest/*.a /usr/lib
+    - sudo cmake /usr/src/gtest/CMakeLists.txt
+    - sudo make -C /usr/src/gtest
+    - sudo cp /usr/src/gtest/*.a /usr/lib
 
 script:
     - cd cli
