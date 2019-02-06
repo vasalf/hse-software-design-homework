@@ -17,6 +17,7 @@ add_library(lcli STATIC
     lib/parser/parse.cpp
     lib/common/char_utils.cpp
     lib/executor/executor.cpp
+    lib/executor/private/external_executor.cpp
 )
 target_link_libraries(lcli LINK_PUBLIC stdc++fs)
 

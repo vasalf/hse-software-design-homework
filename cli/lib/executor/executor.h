@@ -47,4 +47,6 @@ public:
     static TExecutorPtr MakeExecutor(std::string command, TEnvironment& globalEnvironment);
 };
 
+void UpdateCmdEnvironment(TCmdEnvironment& env, const TCommand& command);
+
 } // namespace NCli

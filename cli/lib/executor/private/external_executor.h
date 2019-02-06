@@ -14,20 +14,29 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "executor.h"
+#pragma once
 
-#include <executor/private/external_executor.h>
+#include <executor/executor.h>
+
 
 namespace NCli {
+namespace NPrivate {
 
-TExecutorPtr TExecutorFactory::MakeExecutor(std::string, TEnvironment& globalEnvironment) {
-    return std::make_shared<NPrivate::TExternalExecutor>(globalEnvironment);
-}
+class TExternalExecutor final : public IExecutor {
+public:
+    explicit TExternalExecutor(TEnvironment& globalEnv);
 
-void UpdateCmdEnvironment(TCmdEnvironment& env, const TCommand& command) {
-    for (const auto& assignment : command.Assignments()) {
-        env.SetLocalValue(assignment.Name, assignment.Value);
-    }
-}
+    ~TExternalExecutor() override = default;
+    TExternalExecutor(const TExternalExecutor&) = delete;
+    TExternalExecutor& operator=(const TExternalExecutor&) = delete;
+    TExternalExecutor(TExternalExecutor&&) = delete;
+    TExternalExecutor& operator=(TExternalExecutor&&) = delete;
 
+    void Execute(const TCommand& command, std::istream& in, std::ostream& out) override;
+
+private:
+    TEnvironment& GlobalEnv_;
+};
+
+} // namespace NPrivate
 } // namespace NCli
