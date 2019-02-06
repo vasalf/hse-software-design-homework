@@ -8,7 +8,7 @@ before_install:
 
 install:
     - sudo apt-get install -qq g++-7 cmake
-    - sudo update-alternatives --install /usr/bin/g++ /usr/bin/g++-7 90
+    - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-7 90
 
 script:
     - cd cli
@@ -17,3 +17,4 @@ script:
     - cmake ..
     - make
     - ./cli_test
+    - cd ../..
