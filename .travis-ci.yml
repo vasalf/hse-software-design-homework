@@ -1,0 +1,19 @@
+language: cpp
+compiler: gcc
+dist: xenial
+
+before_install:
+    - sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
+    - sudo apt-get update
+
+install:
+    - sudo apt-get install -qq g++-7 cmake
+    - sudo update-alternatives --install /usr/bin/g++ /usr/bin/g++-7 90
+
+script:
+    - cd cli
+    - mkdir cmake-build-debug
+    - cd cmake-build-debug
+    - cmake ..
+    - make
+    - ./cli_test
