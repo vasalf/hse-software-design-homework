@@ -32,7 +32,7 @@ The emulator is written in C++17 and built by CMake, so modern versions of both 
 CMake and g++ from the official repository are fine.
 You may install it by executing
 
-```bash
+```
 # apt install cmake g++
 ```
 
@@ -41,7 +41,7 @@ Note that even though the library is provided in the repository,
 you still have to install it system-wide as it is needed by CMake.
 You may do it by executing
 
-```bash
+```
 # apt install libgtest-dev
 # cmake /usr/src/gtest/CMakeLists.txt
 # make -C /usr/src/gtest
@@ -51,7 +51,7 @@ You may do it by executing
 Now everything is ready for the build.
 The release version may be built by executing the following in the project root:
 
-```bash
+```
 $ mkdir cmake-build-release && cd cmake-build-release
 $ cmake .. -DCMAKE_BUILD_TYPE=Release
 $ make
@@ -59,13 +59,13 @@ $ make
 
 Optionally, you may launch the tests by executing
 
-```bash
+```
 $ ./cli_test
 ```
 
 Or, alternatively,
 
-```bash
+```
 $ make test
 ```
 
@@ -79,7 +79,7 @@ are not fully supported by GCC 5.3.1, which is installed by default in Ubuntu 16
 So you need to install the modern compiler first.
 In order to do so, you need to execute the following commands instead of the very first command of the previous guide:
 
-```bash
+```
 # apt remove cmake
 # wget https://cmake.org/files/v3.10/cmake-3.10.0-Linux-x86_64.sh
 # sudo sh cmake-3.10.0-Linux-x86_64.sh --prefix=/usr/local --exclude-subdir
@@ -91,7 +91,7 @@ In order to do so, you need to execute the following commands instead of the ver
 That's it. After this, you may follow the installation instructions for Ubuntu 18.04+.
 The only change you need to perform is to execute
 
-```bash
+```
 $ cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER="/usr/bin/g++-8"
 ```
 
