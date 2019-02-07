@@ -45,18 +45,18 @@ void DoTest(std::string command, std::string in, std::string expectedOut) {
 
 } // namespace <anonymous>
 
-TEST(ExecuteTest, singleCatMinus) {
+TEST(ExecuteTest, SingleCatMinus) {
     DoTest("cat -\n", "TOP SECRET", "TOP SECRET");
 }
 
-TEST(ExecuteTest, pipedCatMinuses) {
+TEST(ExecuteTest, PipedCatMinuses) {
     DoTest("cat - | cat - | cat -\n", "TOP SECRET", "TOP SECRET");
 }
 
-TEST(ExecuteTest, destroyedStdout) {
+TEST(ExecuteTest, DestroyedStdout) {
     DoTest("cat - | echo \"TOP SECRET\"\n", "UNEXPECTED", "TOP SECRET\n");
 }
 
-TEST(ExecuteTest, testOneAssignment) {
+TEST(ExecuteTest, OneAssignment) {
     DoTest("FILE=example.txt\n", "", "");
 }

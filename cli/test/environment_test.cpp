@@ -20,13 +20,13 @@
 
 using namespace NCli;
 
-TEST(EnvironmentTest, loadEmptyGlobalEnvironment) {
+TEST(EnvironmentTest, LoadEmptyGlobalEnvironment) {
     const char* envp[] = {nullptr};
     auto env = LoadGlobalEnvironment(envp);
     ASSERT_TRUE(env.empty());
 }
 
-TEST(EnvironmentTest, loadGlobalEnvironment) {
+TEST(EnvironmentTest, LoadGlobalEnvironment) {
     const char* envp[] = {
             "PATH=/usr/bin:/bin",
             "SOME_VAR=SOME VALUE",
@@ -44,7 +44,7 @@ TEST(EnvironmentTest, loadGlobalEnvironment) {
     ASSERT_EQ(expected, env);
 }
 
-TEST(EnvironmentTest, getGlobalValue) {
+TEST(EnvironmentTest, GetGlobalValue) {
     std::string SECRET = "/usr/bin:/bin";
 
     TEnvironment env;
@@ -54,7 +54,7 @@ TEST(EnvironmentTest, getGlobalValue) {
     ASSERT_EQ(SECRET, environment.GetValue("PATH"));
 }
 
-TEST(EnvironementTest, getLocalValue) {
+TEST(EnvironementTest, GetLocalValue) {
     std::string SECRET = "/usr/bin:/bin:/usr/local/bin";
 
     TEnvironment env;
@@ -68,7 +68,7 @@ TEST(EnvironementTest, getLocalValue) {
     ASSERT_EQ(envCopy, env);
 }
 
-TEST(EnvironmentTest, getUnexistentValue) {
+TEST(EnvironmentTest, GetUnexistentValue) {
     TEnvironment env;
     TCmdEnvironment environment(env);
     ASSERT_EQ("", environment.GetValue(""));

@@ -24,7 +24,7 @@
 
 #include <unistd.h>
 
-TEST(ExampleTest, example) {
+TEST(ExampleTest, Example) {
     std::string exampleContent = "Some example text\n";
 
     std::string filename = "tempXXXXXX";

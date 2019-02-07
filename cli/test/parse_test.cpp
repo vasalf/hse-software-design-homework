@@ -36,11 +36,11 @@ TFullCommand DoParse(std::string input) {
 
 } // namespace <anonymous>
 
-TEST(ParseTest, empty) {
+TEST(ParseTest, Empty) {
     ASSERT_TRUE(DoParse("\n").empty());
 }
 
-TEST(ParseTest, noAssignments) {
+TEST(ParseTest, NoAssignments) {
     auto result = DoParse(R"(echo \| b "| c"at -)" "\n");
     ASSERT_EQ(1, result.size());
     ASSERT_TRUE(result[0].Assignments().empty());
@@ -48,7 +48,7 @@ TEST(ParseTest, noAssignments) {
     ASSERT_EQ(5, result[0].Args().size());
 }
 
-TEST(ParseTest, assignments) {
+TEST(ParseTest, Assignments) {
     auto result = DoParse(R"(x=x echo $y | o=o cat -)" "\n");
     ASSERT_EQ(2, result.size());
     ASSERT_EQ(1, result[0].Assignments().size());

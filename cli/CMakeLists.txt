@@ -22,7 +22,8 @@ add_library(lcli STATIC
     lib/common/istream_wrapper.cpp
     lib/executor/private/builtin_executors.cpp
     lib/common/exit_exception.cpp
-        lib/common/pipe.cpp lib/common/pipe.h)
+    lib/common/pipe.cpp
+)
 target_link_libraries(lcli LINK_PUBLIC stdc++fs)
 
 add_executable(cli main.cpp)
@@ -44,6 +45,7 @@ add_executable(cli_test
     test/parse_test.cpp
     test/executor_test.cpp
     test/execute_test.cpp
-        test/example_test.cpp)
+    test/example_test.cpp
+)
 target_link_libraries(cli_test LINK_PUBLIC lcli gtest gtest_main)
 gtest_add_tests(cli_test "" AUTO)

@@ -20,7 +20,7 @@
 
 using namespace NCli;
 
-TEST(CommandTest, noAssignments) {
+TEST(CommandTest, NoAssignments) {
     TCommand command({"echo", "abc", "def", "ghi"});
     ASSERT_TRUE(command.Assignments().empty());
     ASSERT_EQ("echo", command.Args()[0]);
@@ -28,14 +28,14 @@ TEST(CommandTest, noAssignments) {
     ASSERT_EQ(expected, command.Args());
 }
 
-TEST(CommandTest, emptyCmdline) {
+TEST(CommandTest, EmptyCmdline) {
     TCommand command({});
     ASSERT_TRUE(command.Assignments().empty());
     ASSERT_EQ("", command.Command());
     ASSERT_TRUE(command.Args().empty());
 }
 
-TEST(CommandTest, withAssignments) {
+TEST(CommandTest, WithAssignments) {
     TCommand command({"a=A", "b=BC", "echo", "A", "BC"});
     ASSERT_EQ(2, command.Assignments().size());
     ASSERT_EQ("a", command.Assignments()[0].Name);
@@ -47,7 +47,7 @@ TEST(CommandTest, withAssignments) {
     ASSERT_EQ(expected, command.Args());
 }
 
-TEST(CommandTest, noArgs) {
+TEST(CommandTest, NoArgs) {
     TCommand command({"exit"});
     ASSERT_TRUE(command.Assignments().empty());
     ASSERT_EQ("exit", command.Command());

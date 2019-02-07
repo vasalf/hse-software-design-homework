@@ -38,7 +38,7 @@ void MakeCommand(std::string cmdline, TCommand& cmd) {
 
 }
 
-TEST(ExecutorTest, echoAsExternalCommand) {
+TEST(ExecutorTest, EchoAsExternalCommand) {
     TEnvironment env;
     env["PATH"] = getenv("PATH");
     TExecutorPtr executor = TExecutorFactory::MakeExecutor("notbuiltin", env);
@@ -55,7 +55,7 @@ TEST(ExecutorTest, echoAsExternalCommand) {
     ASSERT_EQ("abc def", os.str());
 }
 
-TEST(ExecutorTest, catMinusAsExternalCommand) {
+TEST(ExecutorTest, CatMinusAsExternalCommand) {
     TEnvironment env;
     env["PATH"] = getenv("PATH");
     TExecutorPtr executor = TExecutorFactory::MakeExecutor("notbuiltin", env);
@@ -72,7 +72,7 @@ TEST(ExecutorTest, catMinusAsExternalCommand) {
     ASSERT_EQ("Hey there!\n", os.str());
 }
 
-TEST(ExecutorTest, oneAssignment) {
+TEST(ExecutorTest, OneAssignment) {
     TEnvironment env;
     TExecutorPtr executor = TExecutorFactory::MakeExecutor("", env);
 
@@ -88,7 +88,7 @@ TEST(ExecutorTest, oneAssignment) {
     ASSERT_EQ("example.txt", env["FILE"]);
 }
 
-TEST(ExecutorTest, manyAssignments) {
+TEST(ExecutorTest, ManyAssignments) {
     TEnvironment env;
     TExecutorPtr executor = TExecutorFactory::MakeExecutor("", env);
 
@@ -106,7 +106,7 @@ TEST(ExecutorTest, manyAssignments) {
     ASSERT_EQ("value 3", env["VAR_3"]);
 }
 
-TEST(ExecutorTest, exit) {
+TEST(ExecutorTest, Exit) {
     TEnvironment env;
     TExecutorPtr executor = TExecutorFactory::MakeExecutor("exit", env);
 
@@ -120,7 +120,7 @@ TEST(ExecutorTest, exit) {
     ASSERT_THROW(executor->Execute(cmd, isw, os), TExitException);
 }
 
-TEST(ExecutorTest, echoNothing) {
+TEST(ExecutorTest, EchoNothing) {
     TEnvironment env;
     TExecutorPtr executor = TExecutorFactory::MakeExecutor("echo", env);
 
@@ -136,7 +136,7 @@ TEST(ExecutorTest, echoNothing) {
     ASSERT_EQ("\n", os.str());
 }
 
-TEST(ExecutorTest, echoOneArg) {
+TEST(ExecutorTest, EchoOneArg) {
     TEnvironment env;
     TExecutorPtr executor = TExecutorFactory::MakeExecutor("echo", env);
 
@@ -151,7 +151,7 @@ TEST(ExecutorTest, echoOneArg) {
     ASSERT_EQ("abc def ghi jkl\n", os.str());
 }
 
-TEST(ExecutorTest, echoManyArgs) {
+TEST(ExecutorTest, EchoManyArgs) {
     TEnvironment env;
     TExecutorPtr executor = TExecutorFactory::MakeExecutor("echo", env);
 
@@ -187,15 +187,15 @@ void DoCatStdinTest(std::string command) {
 
 } // namespace <anonymous>
 
-TEST(ExecutorTest, catWithNoArgs) {
+TEST(ExecutorTest, CatWithNoArgs) {
     DoCatStdinTest("cat\n");
 }
 
-TEST(ExecutorTest, catMinus) {
+TEST(ExecutorTest, CatMinus) {
     DoCatStdinTest("cat -\n");
 }
 
-TEST(ExecutorTest, catFile) {
+TEST(ExecutorTest, CatFile) {
     std::string INPUT = "some\n input in the file";
 
     std::string filename = "tempXXXXXX";
@@ -223,7 +223,7 @@ TEST(ExecutorTest, catFile) {
     std::filesystem::remove(std::filesystem::path(filename));
 }
 
-TEST(ExecutorTest, pwd) {
+TEST(ExecutorTest, Pwd) {
     TEnvironment env;
     env["PWD"] = "/some/path";
     TExecutorPtr executor = TExecutorFactory::MakeExecutor("pwd", env);
@@ -239,7 +239,7 @@ TEST(ExecutorTest, pwd) {
     ASSERT_EQ("/some/path\n", os.str());
 }
 
-TEST(ExecutorTest, wc) {
+TEST(ExecutorTest, Wc) {
     std::string INPUT = "some\n example\t FILE\n\n";
 
     TEnvironment env;

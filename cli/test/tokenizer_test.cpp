@@ -46,15 +46,15 @@ void DoTest(std::vector<std::string> test, std::vector<std::string> expected) {
 
 } // namespace <anonymous>
 
-TEST(TokenizerTest, oneToken) {
+TEST(TokenizerTest, OneToken) {
     DoTest({"a\n"}, {"a"});
 }
 
-TEST(TokenizerTest, severalTokens) {
+TEST(TokenizerTest, SeveralTokens) {
     DoTest({"a b c   defgh  ij\n"}, {"a", "b", "c", "defgh", "ij"});
 }
 
-TEST(TokenizerTest, escapedEOL) {
+TEST(TokenizerTest, EscapedEOL) {
     DoTest(
             {
                     R"(a b\
@@ -65,42 +65,42 @@ TEST(TokenizerTest, escapedEOL) {
     );
 }
 
-TEST(TokenizerTest, escapedSpace) {
+TEST(TokenizerTest, EscapedSpace) {
     DoTest(
             {R"(abc\ def)" "\n"},
             {"abc def"}
     );
 }
 
-TEST(TokenizerTest, escapedQuotes) {
+TEST(TokenizerTest, EscapedQuotes) {
     DoTest(
             {R"(ab\'\\cdef\'\"ghi\"\ \"jk\')" "\n"},
             {R"(ab'\cdef'"ghi" "jk')"}
     );
 }
 
-TEST(TokenizerTest, singleQuotes) {
+TEST(TokenizerTest, SingleQuotes) {
     DoTest(
             {R"('ab cd' '\')" "\n"},
             {"ab cd", "\\"}
     );
 }
 
-TEST(TokenizerTest, doubleQuotes) {
+TEST(TokenizerTest, DoubleQuotes) {
     DoTest(
             {R"("ab cd\"" gh\""ij")" "\n"},
             {R"(ab cd")", R"(gh"ij)"}
     );
 }
 
-TEST(TokenizerTest, singleQuotesInsideDoubleQuotes) {
+TEST(TokenizerTest, SingleQuotesInsideDoubleQuotes) {
     DoTest(
             {R"(ab"cd'\\' ef" "'gh\''")" "\n"},
             {R"(abcd'\' ef)", "'gh''"}
     );
 }
 
-TEST(TokenizerTest, pipelines) {
+TEST(TokenizerTest, Pipelines) {
     DoTest(
             {"echo $VAR | cat - |cat -|grep value1|grep value2\n"},
             {"echo", "$VAR", "|", "cat", "-", "|", "cat", "-", "|", "grep", "value1", "|", "grep", "value2"}

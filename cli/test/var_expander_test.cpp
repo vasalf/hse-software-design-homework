@@ -51,35 +51,35 @@ void DoTest(std::string test, std::vector<std::string> expected) {
 
 } // namespace <anonymous>
 
-TEST(VarExpanderTest, noVars) {
+TEST(VarExpanderTest, NoVars) {
     DoTest(
         "CC=/usr/local/bin make -j9\n",
         {"CC=/usr/local/bin", "make", "-j9"}
     );
 }
 
-TEST(VarExpanderTest, vars) {
+TEST(VarExpanderTest, Vars) {
     DoTest(
         "PATH=$PATH:/usr/local/bin clang++ a.cpp -o$BIN_NAME\n",
         {"PATH=/bin:/usr/bin:/usr/local/bin", "clang++", "a.cpp", "-oa"}
     );
 }
 
-TEST(VarExpanderTest, varsAndQuotes) {
+TEST(VarExpanderTest, VarsAndQuotes) {
     DoTest(
         R"('$VARSP' "$VARSP")" "\n",
         {"$VARSP", "value with spaces"}
     );
 }
 
-TEST(VarExpanderTest, quotesAfterVars) {
+TEST(VarExpanderTest, QuotesAfterVars) {
     DoTest(
         R"(echo $VAR"SP")" "\n",
         {"echo", "valueSP"}
     );
 }
 
-TEST(VarExpanderTest, pipeAfterVar) {
+TEST(VarExpanderTest, PipeAfterVar) {
     DoTest(
         "echo $VAR|cat -\n",
         {"echo", "value", "|", "cat", "-"}
