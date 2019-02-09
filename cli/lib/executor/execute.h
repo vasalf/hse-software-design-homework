@@ -21,6 +21,12 @@
 
 namespace NCli {
 
+/**
+ * Executes the full command {@arg fullCommand} with environment {@arg environment}, taking stdin from {@arg in} and
+ * writing stdout to {@arg out}.
+ *
+ * Actually creates executors and calls them and redirects the input and output.
+ */
 void Execute(const TFullCommand& fullCommand, TEnvironment& environment, IIStreamWrapper& in, std::ostream& out);
 
 } // namespace NCli

@@ -23,23 +23,51 @@
 
 namespace NCli {
 
+/**
+ * Represents a sequence of input characters understood by CLI as a single word. Stores a sequence of extended chars.
+ */
 class TToken {
 public:
+    /**
+     * Constructs a token.
+     */
     TToken() = default;
 
+    /**
+     * The token is supposed to be stored in std::vector, so it is copy-constructible and -assignable and
+     * move-constructible and -assignable.
+     */
     ~TToken() = default;
     TToken(const TToken&) = default;
     TToken& operator=(const TToken&) = default;
     TToken(TToken&&) noexcept = default;
     TToken& operator=(TToken&&) noexcept = default;
 
+    /**
+     * Constructs a string representation of a token.
+     *
+     * This takes account of ignorance and escape statuses of stored extended chars.
+     */
     std::string ToString() const;
 
+    /**
+     * Returns a reference to extended char at given position.
+     */
     TExtChar& operator[](std::size_t i);
+
+    /**
+     * Returns a const reference to extended char at given position.
+     */
     const TExtChar& operator[](std::size_t i) const;
 
+    /**
+     * Appends a character to the token.
+     */
     void PushBack(const TExtChar& character);
 
+    /**
+     * Returns number of stored extended characters, including fake delimiters.
+     */
     std::size_t Size() const;
 
 private:

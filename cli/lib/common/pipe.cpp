@@ -43,23 +43,34 @@ void TPipe::RegisterDirection(TPipe::EDirection direction) {
 
     Direction_ = direction;
     if (direction == EDirection::IN) {
-        close(WriteEndDescriptor());
+        close(FD_[1]);
         Status_[1] = EPipeEndStatus::CLOSED;
     } else if (direction == EDirection::OUT) {
-        close(ReadEndDescriptor());
+        close(FD_[0]);
         Status_[0] = EPipeEndStatus::CLOSED;
     }
 }
 
 int TPipe::ReadEndDescriptor() const {
+    if (Direction_ != EDirection::IN) {
+        throw std::logic_error("invalid pipe state");
+    }
+
     return FD_[0];
 }
 
 int TPipe::WriteEndDescriptor() const {
+    if (Direction_ != EDirection::OUT) {
+        throw std::logic_error("invalid pipe state");
+    }
+
     return FD_[1];
 }
 
 void TPipe::CloseWriteEnd() {
+    if (Direction_ != EDirection::OUT) {
+        throw std::logic_error("invalid pipe state");
+    }
     if (Status_[1] == EPipeEndStatus::CLOSED) {
         throw std::logic_error("invalid pipe end status");
     }

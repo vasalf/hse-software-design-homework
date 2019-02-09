@@ -24,23 +24,52 @@
 
 namespace NCli {
 
+/**
+ * Splits the input command into sequence of {@link NCli::TToken}.
+ */
 class TTokenizer final {
 public:
+    /**
+     * Represents whether the tokenizer is waiting for more symbols or the command is complete.
+     */
     enum class EState {
         WAITING,
         DONE
     };
 
+    /**
+     * Creates the tokenizer.
+     */
     TTokenizer();
     ~TTokenizer();
 
+    /**
+     * Those restrictions are dictated by the {@link NCli::TTokenizeDFA}, which is stored inside.
+     */
     TTokenizer(const TTokenizer&) = delete;
     TTokenizer& operator=(const TTokenizer&) = delete;
     TTokenizer(TTokenizer&&) noexcept = default;
     TTokenizer& operator=(TTokenizer&&) noexcept = default;
 
+    /**
+     * Updates the tokenizer state with a sequence of input symbols.
+     */
     void Update(std::string s);
+
+    /**
+     * Returns the tokenizer state.
+     *
+     * @see NCli::TTokenizer::EState
+     *
+     * Note that the tokenizer expects a space or newline character at the end of input.
+     */
     EState State() const;
+
+    /**
+     * Returns a sequence of parsed tokens.
+     *
+     * @see NCli::TTokenizeDFA::ParsedTokens
+     */
     std::vector<TToken> ParsedTokens() const;
 
 private:

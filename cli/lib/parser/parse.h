@@ -23,8 +23,14 @@
 
 namespace NCli {
 
+/**
+ * This type represents a sequence of single input commands separated by pipes.
+ */
 using TFullCommand = std::vector<TCommand>;
 
+/**
+ * Parses the command, splitting it on pipes and creating command from each part.
+ */
 TFullCommand Parse(const std::vector<TToken>& tokens);
 
 } // namespace NCli

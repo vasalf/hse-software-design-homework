@@ -21,16 +21,31 @@
 
 namespace NCli {
 
+/**
+ * Substitutes the environmental variable references by its values in the command.
+ *
+ * The values are placed in the tokens as extended chars with default escape and ignorance statuses.
+ */
 class TVarExpander {
 public:
+    /**
+     * Constructs the expander. Takes a reference to the environment.
+     */
     explicit TVarExpander(TEnvironment& environment);
 
+    /**
+     * This class holds a reference to the global environment so it is not copy-constructible nor copy-assignable nor
+     * move-constructible nor move-assignable.
+     */
     ~TVarExpander() = default;
     TVarExpander(const TVarExpander&) = delete;
     TVarExpander& operator=(const TVarExpander&) = delete;
     TVarExpander(TVarExpander&&) noexcept = delete;
     TVarExpander& operator=(TVarExpander&&) noexcept = delete;
 
+    /**
+     * Performs the actual substitution.
+     */
     std::vector<TToken> Expand(const std::vector<TToken>& tokens);
 private:
     TEnvironment& Environment_;

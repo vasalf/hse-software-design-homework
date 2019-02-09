@@ -21,90 +21,182 @@
 namespace NCli {
 namespace NPrivate {
 
+/**
+ * Performs the assignments on global environment.
+ *
+ * This executor is created when the command token is empty. It is designed to performed actions like `FOO=bar`.
+ */
 class TAssignmentExecutor final : public IExecutor {
 public:
+    /**
+     * Creates the executor.
+     */
     explicit TAssignmentExecutor(TEnvironment& env);
 
+    /**
+     * It is supposed that all executors are wrapped in std::shared_ptr. Every executor is not copy-constructible nor
+     * -assignable nor move-constructible nor -assignable in order to ensure no illegal action is performed.
+     */
     ~TAssignmentExecutor() override = default;
     TAssignmentExecutor(const TAssignmentExecutor&) = delete;
     TAssignmentExecutor& operator=(const TAssignmentExecutor&) = delete;
     TAssignmentExecutor(TAssignmentExecutor&&) noexcept = delete;
     TAssignmentExecutor& operator=(TAssignmentExecutor&&) noexcept = delete;
 
-    void Execute(const TCommand& command, IIStreamWrapper& in, std::ostream& os);
+    /**
+     * {@link NCli::IExecutor::Execute}
+     */
+    void Execute(const TCommand& command, IIStreamWrapper& in, std::ostream& os) override;
 
 private:
     TEnvironment& Environment_;
 };
 
+/**
+ * Throws an {@link NCli::ExitException}.
+ *
+ * This is the executor for builtin command `exit`.
+ */
 class TExitExecutor final : public IExecutor {
 public:
+    /**
+     * Creates the executor.
+     */
     explicit TExitExecutor(TEnvironment&);
-    ~TExitExecutor() override = default;
 
+    /**
+     * It is supposed that all executors are wrapped in std::shared_ptr. Every executor is not copy-constructible nor
+     * -assignable nor move-constructible nor -assignable in order to ensure no illegal action is performed.
+     */
+    ~TExitExecutor() override = default;
     TExitExecutor(const TExitExecutor&) = delete;
     TExitExecutor& operator=(const TExitExecutor&) = delete;
     TExitExecutor(TExitExecutor&&) noexcept = delete;
     TExitExecutor& operator=(TExitExecutor&&) noexcept = delete;
 
-    void Execute(const TCommand&, IIStreamWrapper&, std::ostream& os);
+    /**
+     * {@link NCli::IExecutor::Execute}
+     */
+    void Execute(const TCommand&, IIStreamWrapper&, std::ostream& os) override;
 };
 
+/**
+ * Writes its arguments to the output, separating with spaces.
+ *
+ * This is the executor for builtin command `echo`.
+ */
 class TEchoExecutor final : public IExecutor {
 public:
+    /**
+     * Creates the executor.
+     */
     explicit TEchoExecutor(TEnvironment&);
-    ~TEchoExecutor() override = default;
 
+    /**
+     * It is supposed that all executors are wrapped in std::shared_ptr. Every executor is not copy-constructible nor
+     * -assignable nor move-constructible nor -assignable in order to ensure no illegal action is performed.
+     */
+    ~TEchoExecutor() override = default;
     TEchoExecutor(const TEchoExecutor&) = delete;
     TEchoExecutor& operator=(const TEchoExecutor&) = delete;
     TEchoExecutor(TEchoExecutor&&) noexcept = delete;
     TEchoExecutor& operator=(TEchoExecutor&&) noexcept = delete;
 
+    /**
+     * {@link NCli::IExecutor::Execute}
+     */
     void Execute(const TCommand&, IIStreamWrapper&, std::ostream& os) override;
 };
 
+/**
+ * Writes the file content on stdout.
+ *
+ * When given no arguments or `-` as an argument, writes content of stdout.
+ *
+ * This is the executor for builtin command `cat`.
+ */
 class TCatExecutor final : public IExecutor {
 public:
+    /**
+     * Creates the executor.
+     */
     explicit TCatExecutor(TEnvironment& environment);
-    ~TCatExecutor() override = default;
 
+    /**
+     * It is supposed that all executors are wrapped in std::shared_ptr. Every executor is not copy-constructible nor
+     * -assignable nor move-constructible nor -assignable in order to ensure no illegal action is performed.
+     */
+    ~TCatExecutor() override = default;
     TCatExecutor(const TCatExecutor&) = delete;
     TCatExecutor& operator=(const TCatExecutor&) = delete;
     TCatExecutor(TCatExecutor&&) noexcept = delete;
     TCatExecutor& operator=(TCatExecutor&&) noexcept = delete;
 
+    /**
+     * {@link NCli::IExecutor::Execute}
+     */
     void Execute(const TCommand&, IIStreamWrapper&, std::ostream& os) override;
 
 private:
     TEnvironment& Environment_;
 };
 
+/**
+ * Prints the $PWD content.
+ *
+ * This is the executor for builtin command `pwd`.
+ */
 class TPwdExecutor final : public IExecutor {
 public:
+    /**
+     * Creates the executor.
+     */
     explicit TPwdExecutor(TEnvironment& environment);
-    ~TPwdExecutor() override = default;
 
+    /**
+     * It is supposed that all executors are wrapped in std::shared_ptr. Every executor is not copy-constructible nor
+     * -assignable nor move-constructible nor -assignable in order to ensure no illegal action is performed.
+     */
+    ~TPwdExecutor() override = default;
     TPwdExecutor(const TPwdExecutor&) = delete;
     TPwdExecutor& operator=(const TPwdExecutor&) = delete;
     TPwdExecutor(TPwdExecutor&&) noexcept = delete;
     TPwdExecutor& operator=(TPwdExecutor&&) noexcept = delete;
 
+    /**
+     * {@link NCli::IExecutor::Execute}
+     */
     void Execute(const TCommand&, IIStreamWrapper&, std::ostream& os) override;
 
 private:
     TEnvironment& Environment_;
 };
 
+/**
+ * Prints number of symbols, words and lines in standard input or in file.
+ *
+ * This os the executor for builtin command `wc`.
+ */
 class TWcExecutor final : public IExecutor {
 public:
+    /**
+     * Creates the executor.
+     */
     explicit TWcExecutor(TEnvironment& environment);
-    ~TWcExecutor() override = default;
 
+    /**
+     * It is supposed that all executors are wrapped in std::shared_ptr. Every executor is not copy-constructible nor
+     * -assignable nor move-constructible nor -assignable in order to ensure no illegal action is performed.
+     */
+    ~TWcExecutor() override = default;
     TWcExecutor(const TWcExecutor&) = delete;
     TWcExecutor& operator=(const TWcExecutor&) = delete;
     TWcExecutor(TWcExecutor&&) noexcept = delete;
     TWcExecutor& operator=(TWcExecutor&&) noexcept = delete;
 
+    /**
+     * {@link NCli::IExecutor::Execute}
+     */
     void Execute(const TCommand&, IIStreamWrapper&, std::ostream& os) override;
 
 private:

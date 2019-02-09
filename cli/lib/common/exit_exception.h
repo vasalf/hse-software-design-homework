@@ -20,7 +20,10 @@
 
 namespace NCli {
 
-class TExitException : public std::exception {
+/**
+ * This exception is thrown when an exit is caused by a built-in command (for example, `exit`).
+ */
+class TExitException final : public std::exception {
 public:
     TExitException();
 

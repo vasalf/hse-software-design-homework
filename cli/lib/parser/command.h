@@ -23,18 +23,41 @@
 
 namespace NCli {
 
+/**
+ * This represents a single input command without pipes.
+ *
+ * It contains the command, sequence of its args and sequence of local variable assignments.
+ */
 class TCommand final {
 public:
+    /**
+     * Creates the command by parsing its command line.
+     */
     explicit TCommand(std::vector<std::string> cmdline);
 
+    /**
+     * The command is supposed to be stored in std::vector, so it is copy-constructible and -assignable and
+     * move-constructible and -assignable.
+     */
     ~TCommand() = default;
     TCommand(const TCommand&) = default;
     TCommand& operator=(const TCommand&) = default;
     TCommand(TCommand&&) noexcept = default;
     TCommand& operator=(TCommand&&) noexcept = default;
 
+    /**
+     * Returns the command (the first token after assignments).
+     */
     const std::string& Command() const;
+
+    /**
+     * Returns the command arguments (every token after assignments, including the command).
+     */
     const std::vector<std::string>& Args() const;
+
+    /**
+     * Returns the sequence of local variable assignments before the actual command.
+     */
     const std::vector<TAssignment>& Assignments()const;
 
 private:

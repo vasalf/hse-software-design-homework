@@ -20,19 +20,56 @@
 
 namespace NCli {
 
+/**
+ * Denotes whether the input character was escaped by a backslash.
+ *
+ * Many internal processes, such as tokenization, assumes same escaped and unescaped characters to be unequal. For
+ * example, input string "do\ a\ thing" is assumed to be a single token.
+ */
 enum class ECharEscapeStatus {
     ESCAPED,
     UNESCAPED
 };
 
+/**
+ * Denotes whether some part of a character should be ignored by internal processes.
+ */
 enum class ECharIgnoranceStatus {
+    /**
+     * No part of a character should be ignored.
+     */
     NOTHING,
+
+    /**
+     * This indicates that a character was surrounded by single quotes, so some special characters, such as '$' or '\',
+     * have no special meaning.
+     */
     IGNORE_VARIABLES,
+
+    /**
+     * This indicates a "fake delimeter" special character, which is ignored by almost every internal process except for
+     * variable expanding.
+     */
     JUST_IGNORE
 };
 
+/**
+ * Represents a character and some flags parsed from input string.
+ *
+ * Actual flags are the "escape status" and the "ignorance status".
+ *
+ * Instances of TExtChar are supposed to be stored in a std::vector, so the class is destructible, copy-constructible
+ * and -assignable and move-constructible and -assignable.
+ */
 class TExtChar final {
 public:
+    /**
+     * Constructs an extended character.
+     *
+     * @param c The input character.
+     * @param escaped The escape status.
+     * @param ignorance The ignorance status.
+     */
     explicit TExtChar(char c,
                       ECharEscapeStatus escaped = ECharEscapeStatus::UNESCAPED,
                       ECharIgnoranceStatus ignorance = ECharIgnoranceStatus::NOTHING);
@@ -43,10 +80,29 @@ public:
     TExtChar(TExtChar&&) noexcept = default;
     TExtChar& operator=(TExtChar&&) noexcept = default;
 
+    /**
+     * This transforms an extended character to its view as a simple character.
+     *
+     * Actually, returns the stored input character.
+     */
     char ToChar() const;
+
+    /**
+     * Returns the escape status of a character. See {@link NCli::EEscapeStatus} for more information.
+     */
     ECharEscapeStatus EscapeStatus() const;
+
+    /**
+     *  Returns the ignorance status of a character. See {@link NCli::EIgnoranceStatus} for more information.
+     */
     ECharIgnoranceStatus IgnoranceStatus() const;
 
+    /**
+     * Constructs a special "fake delimiter" character ignored by every internal process except for variable expanding.
+     *
+     * Fake delimiter characters serve as a barrier for reading variable names. They are placed instead of special
+     * characters, quotes, for example.
+     */
     static TExtChar FakeDelim();
 
 private:

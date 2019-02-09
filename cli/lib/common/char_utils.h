@@ -18,6 +18,11 @@
 
 namespace NCli {
 
+/**
+ * Checks whether a character can be a part of an environment variable name.
+ *
+ * Only lowercase and uppercase english letters, digits and underscores are allowed.
+ */
 bool IsVariableNameLetter(char c);
 
 } // namespace NCli

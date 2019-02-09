@@ -25,6 +25,9 @@
 
 namespace NCli {
 
+/**
+ * This exception is thrown when an internal command is not a built-in and cannot be found in $PATH.
+ */
 class TCommandNotFoundException final : public std::runtime_error {
 public:
     explicit TCommandNotFoundException(const std::string& command)
@@ -34,20 +37,38 @@ public:
     ~TCommandNotFoundException() override = default;
 };
 
+/**
+ * This is an interface for executing a single command (NCli::TCommand).
+ *
+ * All built-in and external commands are derived from this class.
+ */
 class IExecutor {
 public:
     virtual ~IExecutor() = default;
 
+    /**
+     * Execute the command {@arg command}, taking input from {@arg in} and printing output to {@arg out}.
+     */
     virtual void Execute(const TCommand& command, IIStreamWrapper& in, std::ostream& out) = 0;
 };
 
 using TExecutorPtr = std::shared_ptr<IExecutor>;
 
+/**
+ * This is a class with only one static method — the factory method for executors.
+ */
 class TExecutorFactory {
 public:
+    /**
+     * Creates an executor. It is the only place in which private executors may be created. It is the place where CLI
+     * decides whether a command is built-in or external.
+     */
     static TExecutorPtr MakeExecutor(const std::string& command, TEnvironment& globalEnvironment);
 };
 
+/**
+ * Updates the command environment {@arg env} with local variable assignments from {@arg command}.
+ */
 void UpdateCmdEnvironment(TCmdEnvironment& env, const TCommand& command);
 
 } // namespace NCli

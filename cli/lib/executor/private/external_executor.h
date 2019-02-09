@@ -21,16 +21,31 @@
 namespace NCli {
 namespace NPrivate {
 
+/**
+ * Executes an external command.
+ *
+ * Searches $PATH for an executable name, then does the actual execution.
+ */
 class TExternalExecutor final : public IExecutor {
 public:
+    /**
+     * Creates the executor.
+     */
     explicit TExternalExecutor(TEnvironment& globalEnv);
 
+    /**
+     * It is supposed that all executors are wrapped in std::shared_ptr. Every executor is not copy-constructible nor
+     * -assignable nor move-constructible nor -assignable in order to ensure no illegal action is performed.
+     */
     ~TExternalExecutor() override = default;
     TExternalExecutor(const TExternalExecutor&) = delete;
     TExternalExecutor& operator=(const TExternalExecutor&) = delete;
     TExternalExecutor(TExternalExecutor&&) = delete;
     TExternalExecutor& operator=(TExternalExecutor&&) = delete;
 
+    /**
+     * {@link NCli::IExecutor::Execute}
+     */
     void Execute(const TCommand& command, IIStreamWrapper& in, std::ostream& out) override;
 
 private:

@@ -21,6 +21,10 @@
 
 namespace NCli {
 
+/**
+ * Runs the CLI, reading input from {@arg is}, writing output to {@arg os} and writing errors to {@arg err} with initial
+ * environment variables {@arg envp}.
+ */
 void RunMain(IIStreamWrapper& is, std::ostream& os, std::ostream& err, char* envp[]);
 
 } // namespace NCli
