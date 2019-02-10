@@ -36,65 +36,6 @@ void ThrowSystemError() {
     throw std::system_error(0, std::system_category());
 }
 
-void DoExecute(const std::string& command,
-               const std::vector<std::string>& args,
-               const std::vector<std::string>& environment,
-               IIStreamWrapper& in,
-               std::ostream& out) {
-    TPipe childStdin;
-    TPipe childStdout;
-
-    pid_t pid = fork();
-    if (pid == 0) {
-        // child
-
-        childStdin.RegisterDirection(TPipe::EDirection::IN);
-        if (in.Dup(childStdin.ReadEndDescriptor(), STDIN_FILENO) == -1) {
-            ThrowSystemError();
-        }
-
-        childStdout.RegisterDirection(TPipe::EDirection::OUT);
-        if (dup2(childStdout.WriteEndDescriptor(), STDOUT_FILENO) == -1) {
-            ThrowSystemError();
-        }
-
-        char* argv[args.size() + 1];
-        std::transform(args.begin(), args.end(), argv,
-                       [](const std::string& s) { return const_cast<char*>(s.c_str()); }
-        );
-        argv[args.size()] = nullptr;
-
-        char* envp[environment.size() + 1];
-        std::transform(environment.begin(), environment.end(), envp,
-                       [](const std::string& s) { return const_cast<char*>(s.c_str()); }
-        );
-        envp[environment.size()] = nullptr;
-
-        if (execve(command.c_str(), argv, envp) == -1) {
-            ThrowSystemError();
-        }
-    } else {
-        // parent
-
-        childStdin.RegisterDirection(TPipe::EDirection::OUT);
-        childStdout.RegisterDirection(TPipe::EDirection::IN);
-
-        in.CopyContentToFile(childStdin.WriteEndDescriptor());
-        childStdin.CloseWriteEnd();
-
-        waitpid(pid, nullptr, 0);
-
-        char buf[128];
-        std::memset(buf, 0, sizeof(buf));
-        ssize_t status;
-        do {
-            out << buf;
-            status = read(childStdout.ReadEndDescriptor(), buf, sizeof(buf) - 1);
-            buf[status] = 0;
-        } while (status != 0);
-    }
-}
-
 std::string FindPath(TCmdEnvironment& cmdEnv, const std::string& command) {
     namespace fs = std::filesystem;
 
@@ -142,13 +83,33 @@ std::string FindPath(TCmdEnvironment& cmdEnv, const std::string& command) {
 } // namespace <anonymous>
 
 TExternalExecutor::TExternalExecutor(TEnvironment& globalEnv)
-        : GlobalEnv_(globalEnv)
+        : TDetachedExecutorBase(globalEnv)
 {}
 
-void TExternalExecutor::Execute(const TCommand& command, IIStreamWrapper& in, std::ostream& out) {
-    TCmdEnvironment cmdEnvironment(GlobalEnv_);
-    UpdateCmdEnvironment(cmdEnvironment, command);
-    DoExecute(FindPath(cmdEnvironment, command.Command()), command.Args(), cmdEnvironment.ToEnvP(), in, out);
+int TExternalExecutor::ExecuteChild(const TCommand& command, TCmdEnvironment& env) {
+    char* argv[command.Args().size() + 1];
+    std::transform(command.Args().begin(), command.Args().end(), argv,
+                   [](const std::string& s) { return const_cast<char*>(s.c_str()); }
+    );
+    argv[command.Args().size()] = nullptr;
+
+    auto environment = env.ToEnvP();
+
+    char* envp[environment.size() + 1];
+    std::transform(environment.begin(), environment.end(), envp,
+                   [](const std::string& s) { return const_cast<char*>(s.c_str()); }
+    );
+    envp[environment.size()] = nullptr;
+
+    if (execve(CmdPath_.c_str(), argv, envp) == -1) {
+        ThrowSystemError();
+    }
+
+    return 0; // Unreachable
+}
+
+void TExternalExecutor::PreExec(TCmdEnvironment& cmdEnv, const TCommand& command) {
+    CmdPath_ = FindPath(cmdEnv, command.Command());
 }
 
 } // namespace NPrivate

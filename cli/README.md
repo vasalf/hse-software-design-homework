@@ -246,6 +246,8 @@ Some commands are executed in separate processes (controlled by fork-exec techni
 For example, all external commands are executed separately.
 Another example is `cat` built-in command, which may take some input from stdin, which may become corrupted after receiving an EOF.
 The interaction with those processes is performed with pipes (`NCli::TPipe` from `lib/common/pipe.h`).
+This logic is implemented in `NCli::NPrivate::TDetachedExecutorBase` from `lib/executor/private/detached_executor_base.h`,
+which is the base class for such executors.
 Another important note is that the behaviour of pipes should be different for standard input or input from output of another command.
 When the input from another command is read and then fully redirected, we cannot afford to read the whole stdin.
 As long as forked command has the same stdin, in case of reading commands from stdin, we just do nothing.

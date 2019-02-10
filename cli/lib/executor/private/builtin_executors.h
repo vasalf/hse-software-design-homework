@@ -17,6 +17,7 @@
 #pragma once
 
 #include <executor/executor.h>
+#include <executor/private/detached_executor_base.h>
 
 namespace NCli {
 namespace NPrivate {
@@ -115,7 +116,7 @@ public:
  *
  * This is the executor for builtin command `cat`.
  */
-class TCatExecutor final : public IExecutor {
+class TCatExecutor final : public TDetachedExecutorBase {
 public:
     /**
      * Creates the executor.
@@ -133,12 +134,9 @@ public:
     TCatExecutor& operator=(TCatExecutor&&) noexcept = delete;
 
     /**
-     * {@link NCli::IExecutor::Execute}
+     * Executes the command.
      */
-    void Execute(const TCommand&, IIStreamWrapper&, std::ostream& os) override;
-
-private:
-    TEnvironment& Environment_;
+    int ExecuteChild(const TCommand& command, TCmdEnvironment& env) override;
 };
 
 /**
@@ -177,7 +175,7 @@ private:
  *
  * This os the executor for builtin command `wc`.
  */
-class TWcExecutor final : public IExecutor {
+class TWcExecutor final : public TDetachedExecutorBase {
 public:
     /**
      * Creates the executor.
@@ -195,12 +193,9 @@ public:
     TWcExecutor& operator=(TWcExecutor&&) noexcept = delete;
 
     /**
-     * {@link NCli::IExecutor::Execute}
+     * Executes the command.
      */
-    void Execute(const TCommand&, IIStreamWrapper&, std::ostream& os) override;
-
-private:
-    TEnvironment& Environment_;
+    int ExecuteChild(const TCommand& command, TCmdEnvironment& env) override;
 };
 
 } // namespace NPrivate

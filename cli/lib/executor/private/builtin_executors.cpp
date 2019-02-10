@@ -73,11 +73,14 @@ void CopyPipeContentsToOStream(const TPipe& pipe, std::ostream& os) {
     } while (status != 0);
 }
 
-std::optional<std::string> ResolveFilename(TEnvironment& env, std::string filename) {
+std::optional<std::string> ResolveFilename(TCmdEnvironment& env, std::string filename) {
     namespace fs = std::filesystem;
-    fs::path probe = fs::path(env["PWD"]) / filename;
-    if (fs::exists(fs::path(env["PWD"]) / filename)) {
+    fs::path probe = fs::path(env.GetValue("PWD")) / filename;
+    if (fs::exists(probe)) {
         return probe;
+    }
+    if (fs::exists(fs::path(filename))) {
+        return filename;
     }
     return {};
 }
@@ -85,64 +88,33 @@ std::optional<std::string> ResolveFilename(TEnvironment& env, std::string filena
 } // namespace <anonymous>
 
 TCatExecutor::TCatExecutor(TEnvironment& environment)
-    : Environment_(environment)
+    : TDetachedExecutorBase(environment)
 {}
 
-void TCatExecutor::Execute(const TCommand& cmd, IIStreamWrapper& in, std::ostream& os) {
-    // In case of reading from stdin (`cat` or `cat -`) std::cin may become damaged after
-    // receiving EOF, so we need to read the file in separate process.
+int TCatExecutor::ExecuteChild(const TCommand& command, TCmdEnvironment& env) {
+    if (command.Args().size() > 2) {
+        std::cerr << "cat: Too many arguments" << std::endl;
+        return 1;
+    }
 
-    TPipe childStdin;
-    TPipe childStdout;
-
-    pid_t pid = fork();
-    if (pid == 0) {
-        // child
-
-        childStdin.RegisterDirection(TPipe::EDirection::IN);
-        if (in.Dup(childStdin.ReadEndDescriptor(), STDIN_FILENO) == -1) {
-            exit(1);
-        }
-        childStdout.RegisterDirection(TPipe::EDirection::OUT);
-        if (dup2(childStdout.WriteEndDescriptor(), STDOUT_FILENO) == -1) {
-            exit(1);
-        }
-
-        if (cmd.Args().size() > 2) {
-            std::cerr << "cat: Too many arguments" << std::endl;
-            exit(1);
-        }
-
-        if (cmd.Args().size() == 1 || cmd.Args()[1] == "-") {
-            std::copy(std::istreambuf_iterator<char>(std::cin),
+    if (command.Args().size() == 1 || command.Args()[1] == "-") {
+        std::copy(std::istreambuf_iterator<char>(std::cin),
+                  std::istreambuf_iterator<char>(),
+                  std::ostreambuf_iterator<char>(std::cout));
+    } else {
+        auto file = ResolveFilename(env, command.Args()[1]);
+        if (file.has_value()) {
+            std::ifstream fin(file.value());
+            std::copy(std::istreambuf_iterator<char>(fin),
                       std::istreambuf_iterator<char>(),
                       std::ostreambuf_iterator<char>(std::cout));
         } else {
-            auto file = ResolveFilename(Environment_, cmd.Args()[1]);
-            if (file.has_value()) {
-                std::ifstream fin(file.value());
-                std::copy(std::istreambuf_iterator<char>(fin),
-                          std::istreambuf_iterator<char>(),
-                          std::ostreambuf_iterator<char>(std::cout));
-            } else {
-                std::cerr << "cat: " << cmd.Args()[1] << ": No such file or directory" << std::endl;
-                exit(1);
-            }
+            std::cerr << "cat: " << command.Args()[1] << ": No such file or directory" << std::endl;
+            return 1;
         }
-
-        exit(0);
-    } else {
-        // parent
-
-        childStdin.RegisterDirection(TPipe::EDirection::OUT);
-        in.CopyContentToFile(childStdin.WriteEndDescriptor());
-        childStdin.CloseWriteEnd();
-        childStdout.RegisterDirection(TPipe::EDirection::IN);
-
-        waitpid(pid, nullptr, 0);
-
-        CopyPipeContentsToOStream(childStdout, os);
     }
+
+    return 0;
 }
 
 TPwdExecutor::TPwdExecutor(TEnvironment& environment)
@@ -154,29 +126,37 @@ void TPwdExecutor::Execute(const TCommand&, IIStreamWrapper&, std::ostream& os) 
 }
 
 TWcExecutor::TWcExecutor(TEnvironment& environment)
-    : Environment_(environment)
+    : TDetachedExecutorBase(environment)
 {}
 
-void TWcExecutor::Execute(const TCommand& cmd, IIStreamWrapper& in, std::ostream& os) {
+int TWcExecutor::ExecuteChild(const TCommand& cmd, TCmdEnvironment& cmdEnv) {
     if (cmd.Args().size() > 2) {
-        throw std::runtime_error("wc: Too many arguments");
+        std::cerr << "wc: Too many arguments" << std::endl;
+        return 1;
     }
 
     bool readFromStdin = cmd.Args().size() == 1 || cmd.Args()[1] == "-";
 
     std::optional<std::string> resolvedFile = {};
     if (!readFromStdin) {
-        resolvedFile = ResolveFilename(Environment_, cmd.Args()[1]);
+        resolvedFile = ResolveFilename(cmdEnv, cmd.Args()[1]);
     }
     if (!readFromStdin && !resolvedFile.has_value()) {
-        throw std::runtime_error("wc: " + cmd.Args()[1] + ": No such file or directory");
+        std::cerr << "wc: " + cmd.Args()[1] + ": No such file or directory" << std::endl;
+        return 1;
     }
     std::unique_ptr<std::istream> fs;
     if (!readFromStdin) {
         fs = std::make_unique<std::ifstream>(resolvedFile.value());
+    } else {
+        std:: string allStdin;
+        std::copy(std::istreambuf_iterator<char>(std::cin),
+                  std::istreambuf_iterator<char>(),
+                  std::back_inserter(allStdin));
+        fs = std::make_unique<std::istringstream>(allStdin);
     }
 
-    std::istream& readFrom = readFromStdin ? in.WrappedIStream() : *fs;
+    std::istream& readFrom = *fs;
 
     long lines = 0;
     {
@@ -202,10 +182,10 @@ void TWcExecutor::Execute(const TCommand& cmd, IIStreamWrapper& in, std::ostream
     {
         readFrom.seekg(0, std::ios::end);
         bytes = readFrom.tellg();
-        readFrom.seekg(0, std::ios::beg);
     }
 
-    os << "\t" << lines << "\t" << words << "\t" << bytes << std::endl;
+    std::cout << "\t" << lines << "\t" << words << "\t" << bytes << std::endl;
+    return 0;
 }
 
 } // namespace NPrivate

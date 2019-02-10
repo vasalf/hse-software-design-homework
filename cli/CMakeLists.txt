@@ -23,6 +23,7 @@ add_library(lcli STATIC
     lib/executor/private/builtin_executors.cpp
     lib/common/exit_exception.cpp
     lib/common/pipe.cpp
+    lib/executor/private/detached_executor_base.cpp
 )
 target_link_libraries(lcli LINK_PUBLIC stdc++fs)
 

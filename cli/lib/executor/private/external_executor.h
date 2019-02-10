@@ -16,7 +16,7 @@
 
 #pragma once
 
-#include <executor/executor.h>
+#include <executor/private/detached_executor_base.h>
 
 namespace NCli {
 namespace NPrivate {
@@ -26,7 +26,7 @@ namespace NPrivate {
  *
  * Searches $PATH for an executable name, then does the actual execution.
  */
-class TExternalExecutor final : public IExecutor {
+class TExternalExecutor final : public TDetachedExecutorBase {
 public:
     /**
      * Creates the executor.
@@ -44,12 +44,17 @@ public:
     TExternalExecutor& operator=(TExternalExecutor&&) = delete;
 
     /**
-     * {@link NCli::IExecutor::Execute}
+     * Searches through $PATH and finds an executable to be launched.
      */
-    void Execute(const TCommand& command, IIStreamWrapper& in, std::ostream& out) override;
+    void PreExec(TCmdEnvironment& cmdEnv, const TCommand& command) override;
+
+    /**
+     * Executes the external command.
+     */
+    int ExecuteChild(const TCommand& command, TCmdEnvironment& env) override;
 
 private:
-    TEnvironment& GlobalEnv_;
+    std::string CmdPath_;
 };
 
 } // namespace NPrivate
