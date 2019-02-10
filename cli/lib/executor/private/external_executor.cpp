@@ -17,7 +17,7 @@
 #include "external_executor.h"
 
 #include <common/pipe.h>
-#include <tokenize/tokenize_dfa.h>
+#include <tokenizer/tokenize_dfa.h>
 
 #include <algorithm>
 #include <cstring>

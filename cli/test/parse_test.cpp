@@ -17,7 +17,7 @@
 #include <gtest/gtest.h>
 
 #include <parser/parse.h>
-#include <tokenize/tokenizer.h>
+#include <tokenizer/tokenizer.h>
 
 using namespace NCli;
 

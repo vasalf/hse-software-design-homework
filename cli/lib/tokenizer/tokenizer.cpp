@@ -16,7 +16,7 @@
 
 #include "tokenizer.h"
 
-#include <tokenize/tokenize_dfa.h>
+#include <tokenizer/tokenize_dfa.h>
 
 #include <cctype>
 #include <utility>

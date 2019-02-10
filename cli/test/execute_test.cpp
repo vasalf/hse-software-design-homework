@@ -18,7 +18,7 @@
 
 #include <executor/execute.h>
 #include <parser/parse.h>
-#include <tokenize/tokenizer.h>
+#include <tokenizer/tokenizer.h>
 
 #include <sstream>
 

@@ -19,7 +19,7 @@
 #include <common/exit_exception.h>
 #include <executor/executor.h>
 #include <parser/parse.h>
-#include <tokenize/tokenizer.h>
+#include <tokenizer/tokenizer.h>
 
 #include <filesystem>
 #include <fstream>

@@ -16,7 +16,7 @@
 
 #include <gtest/gtest.h>
 #include <environment/var_expander.h>
-#include <tokenize/tokenizer.h>
+#include <tokenizer/tokenizer.h>
 
 using namespace NCli;
 

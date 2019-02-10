@@ -20,7 +20,7 @@
 #include <environment/environment.h>
 #include <environment/var_expander.h>
 #include <executor/execute.h>
-#include <tokenize/tokenizer.h>
+#include <tokenizer/tokenizer.h>
 #include <parser/parse.h>
 
 namespace NCli {

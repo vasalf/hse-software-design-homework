@@ -17,7 +17,7 @@
 #pragma once
 
 #include <parser/command.h>
-#include <tokenize/token.h>
+#include <tokenizer/token.h>
 
 #include <vector>
 

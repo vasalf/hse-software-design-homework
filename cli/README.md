@@ -103,6 +103,10 @@ The project was developed by using the educational version of CLion and must be 
 
 ## Architectural overview
 
+### TL;DR
+
+![Class diagram](CLI.png)
+
 ### Build structure
 
 Three targets are build by CMake:
@@ -154,7 +158,7 @@ This means that the lexical analysis of the command must be performed iterativel
 There seems no other efficient way to determine whether the command is finished.
 
 The lexical analysis splits the command into so-called "tokens"
-(represented by class `NCli::TToken` defined in `lib/tokenize/token.h`).
+(represented by class `NCli::TToken` defined in `lib/tokenizer/token.h`).
 A token is a sequence of "extended chars" (`NCli::TExtChar` defined in `lib/common/ext_char.h`).
 The token idea is to represent a single "word" as understood by bash.
 All of the escape symbols and quotes are parsed on this stage.
@@ -177,8 +181,8 @@ valueB
 ```
 
 The whole lexical analysis is called "tokenization".
-It is done by class `NCli::TTokenizer` defined in `lib/tokenize/tokenizer.h`.
-It has a DFA under the hood (`NCli::TTokenizeDfa` defined in `lib/tokenize/tokenize_dfa.h`).
+It is done by class `NCli::TTokenizer` defined in `lib/tokenizer/tokenizer.h`.
+It has a DFA under the hood (`NCli::TTokenizeDfa` defined in `lib/tokenizer/tokenize_dfa.h`).
 This abstract DFA is also reused in parsing the `$PATH` in executor system.
 
 A subsequent feature of DFA is bash-like string joining:

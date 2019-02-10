@@ -17,7 +17,7 @@
 #pragma once
 
 #include <environment/environment.h>
-#include <tokenize/token.h>
+#include <tokenizer/token.h>
 
 namespace NCli {
 

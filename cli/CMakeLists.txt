@@ -8,9 +8,9 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/lib)
 add_library(lcli STATIC
     lib/cli.cpp
     lib/common/ext_char.cpp
-    lib/tokenize/tokenize_dfa.cpp
-    lib/tokenize/token.cpp
-    lib/tokenize/tokenizer.cpp
+        lib/tokenizer/tokenize_dfa.cpp
+        lib/tokenizer/token.cpp
+        lib/tokenizer/tokenizer.cpp
     lib/environment/environment.cpp
     lib/environment/var_expander.cpp
     lib/parser/command.cpp

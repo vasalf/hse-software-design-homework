@@ -17,7 +17,7 @@
 #pragma once
 
 #include <common/ext_char.h>
-#include <tokenize/token.h>
+#include <tokenizer/token.h>
 
 #include <functional>
 #include <memory>

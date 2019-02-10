@@ -16,7 +16,7 @@
 
 #pragma once
 
-#include <tokenize/token.h>
+#include <tokenizer/token.h>
 
 #include <memory>
 #include <string>

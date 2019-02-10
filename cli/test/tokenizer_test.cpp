@@ -16,7 +16,7 @@
 
 #include <gtest/gtest.h>
 
-#include <tokenize/tokenizer.h>
+#include <tokenizer/tokenizer.h>
 
 #include <string>
 #include <vector>
