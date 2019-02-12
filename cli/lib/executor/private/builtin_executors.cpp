@@ -25,9 +25,12 @@
 #include <filesystem>
 #include <fstream>
 #include <optional>
+#include <regex>
 
 #include <unistd.h>
 #include <sys/wait.h>
+
+#include <CLI/CLI11.hpp>
 
 namespace NCli {
 namespace NPrivate {
@@ -61,17 +64,6 @@ void TEchoExecutor::Execute(const TCommand& cmd, IIStreamWrapper&, std::ostream&
 }
 
 namespace {
-
-void CopyPipeContentsToOStream(const TPipe& pipe, std::ostream& os) {
-    char buf[128];
-    std::memset(buf, 0, sizeof(buf));
-    ssize_t status;
-    do {
-        os << buf;
-        status = read(pipe.ReadEndDescriptor(), buf, sizeof(buf) - 1);
-        buf[status] = 0;
-    } while (status != 0);
-}
 
 std::optional<std::string> ResolveFilename(TCmdEnvironment& env, std::string filename) {
     namespace fs = std::filesystem;
@@ -186,6 +178,111 @@ int TWcExecutor::ExecuteChild(const TCommand& cmd, TCmdEnvironment& cmdEnv) {
 
     std::cout << "\t" << lines << "\t" << words << "\t" << bytes << std::endl;
     return 0;
+}
+
+namespace {
+
+class TGrepBadOptionsException final : public std::runtime_error {
+public:
+    TGrepBadOptionsException(std::string message, int retCode)
+        : std::runtime_error(message)
+        , RetCode_(retCode)
+    {}
+
+    int RetCode() const {
+        return RetCode_;
+    }
+
+private:
+    int RetCode_;
+};
+
+struct TGrepOpts {
+    bool IgnoreCase;
+    std::optional<int> AfterContext;
+    std::string Pattern;
+    std::vector<std::string> Filenames;
+};
+
+TGrepOpts ParseGrepArgs(const TCommand& command) {
+    CLI::App app{"Search for PATTERN in each FILE"};
+
+    TGrepOpts opts;
+    app.add_flag("-i,--ignore-case", opts.IgnoreCase, "ignore case distinctions");
+    app.add_option("-A,--after-context", opts.AfterContext, "print NUM lines of trailing context");
+    app.add_option("pattern", opts.Pattern, "PATTERN")->required();
+    app.add_option("files", opts.Filenames, "FILES");
+
+    try {
+        std::vector<char*> args;
+        std::transform(command.Args().begin(), command.Args().end(), std::back_inserter(args),
+                       [](const std::string& s) { return const_cast<char*>(s.c_str()); }
+        );
+        app.parse((int)args.size(), args.data());
+    } catch (CLI::ParseError& e) {
+        throw TGrepBadOptionsException(e.what(), app.exit(e));
+    }
+
+    return opts;
+}
+
+void DoGrepIStream(const TGrepOpts& opts, const std::regex& pattern, std::istream& is) {
+    int printLines = -1;
+    std::string s;
+    while (std::getline(is, s)) {
+        if (std::regex_search(s, pattern)) {
+            printLines = opts.AfterContext.value_or(0);
+        }
+        if (printLines >= 0) {
+            std::cout << s << std::endl;
+            printLines--;
+        }
+    }
+}
+
+} // namespace <anonymous>
+
+TGrepExecutor::TGrepExecutor(TEnvironment& globalEnvironment)
+        : TDetachedExecutorBase(globalEnvironment)
+{}
+
+int TGrepExecutor::ExecuteChild(const TCommand& command, TCmdEnvironment& env) {
+    TGrepOpts opts;
+    try {
+        opts = ParseGrepArgs(command);
+    } catch (TGrepBadOptionsException& e) {
+        return e.RetCode();
+    }
+
+    auto regexStyle = std::regex_constants::grep;
+    if (opts.IgnoreCase) {
+        regexStyle |= std::regex_constants::icase;
+    }
+    std::regex pattern;
+    try {
+        pattern = std::regex(opts.Pattern, regexStyle);
+    } catch (std::regex_error& e) {
+        std::cerr << "grep: " << e.what() << std::endl;
+        return 2;
+    }
+
+    int exitCode = 0;
+    if (opts.Filenames.empty()) {
+        DoGrepIStream(opts, pattern, std::cin);
+    } else {
+        for (const auto& file : opts.Filenames) {
+            auto filename = ResolveFilename(env, file);
+            if (!filename.has_value()) {
+                std::cerr << "grep: " << file << ": No such file or directory" << std::endl;
+                exitCode = 2;
+            } else {
+                std::ifstream fin(filename.value());
+                DoGrepIStream(opts, pattern, fin);
+            }
+        }
+    }
+
+    return exitCode;
 }
 
 } // namespace NPrivate

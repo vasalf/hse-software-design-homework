@@ -8,9 +8,9 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/lib)
 add_library(lcli STATIC
     lib/cli.cpp
     lib/common/ext_char.cpp
-        lib/tokenizer/tokenize_dfa.cpp
-        lib/tokenizer/token.cpp
-        lib/tokenizer/tokenizer.cpp
+    lib/tokenizer/tokenize_dfa.cpp
+    lib/tokenizer/token.cpp
+    lib/tokenizer/tokenizer.cpp
     lib/environment/environment.cpp
     lib/environment/var_expander.cpp
     lib/parser/command.cpp
@@ -26,6 +26,7 @@ add_library(lcli STATIC
     lib/executor/private/detached_executor_base.cpp
 )
 target_link_libraries(lcli LINK_PUBLIC stdc++fs)
+target_include_directories(lcli PRIVATE ../third_party/CLI11-release-1.7.1/)
 
 add_executable(cli main.cpp)
 target_link_libraries(cli LINK_PUBLIC lcli)
