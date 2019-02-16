@@ -173,7 +173,7 @@ private:
 /**
  * Prints number of symbols, words and lines in standard input or in file.
  *
- * This os the executor for builtin command `wc`.
+ * This is the executor for builtin command `wc`.
  */
 class TWcExecutor final : public TDetachedExecutorBase {
 public:
@@ -222,6 +222,31 @@ public:
      */
      int ExecuteChild(const TCommand& command, TCmdEnvironment& env) override;
 };
+
+/**
+ * Prints the list of names of all files and directiries in the current directory.
+ *
+ * This is the executor for builtin command `wc`.
+ */
+class TLsExecutor final : public TDetachedExecutorBase {
+public:
+    explicit TLsExecutor(TEnvironment& globalEnvironmrnt);
+    
+    /**
+     * It is supposed that all executors are wrapped in std::shared_ptr. Every executor is not copy-constructible nor
+     * -assignable nor move-constructible nor -assignable in order to ensure no illegal action is performed.
+     */
+    ~TLsExecutor() override = default;
+    TLsExecutor(const TLsExecutor&) = delete;
+    TLsExecutor& operator=(const TLsExecutor&) = delete;
+    TLsExecutor(TLsExecutor&&) noexcept = delete;
+    TLsExecutor& operator=(TLsExecutor&&) = delete;
+
+    /**
+     * Executes the command.
+     */
+    int ExecuteChild(const TCommand& command, TCmdEnvironment& env) override;
+}
 
 } // namespace NPrivate
 } // namespace NCli

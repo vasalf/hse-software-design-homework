@@ -285,5 +285,9 @@ int TGrepExecutor::ExecuteChild(const TCommand& command, TCmdEnvironment& env) {
     return exitCode;
 }
 
+int TLsExecutor::ExecuteChild(const TCommand command, TCmdEnvironment &env) {
+    
+}
+
 } // namespace NPrivate
 } // namespace NCli
