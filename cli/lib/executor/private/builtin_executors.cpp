@@ -285,8 +285,51 @@ int TGrepExecutor::ExecuteChild(const TCommand& command, TCmdEnvironment& env) {
     return exitCode;
 }
 
-int TLsExecutor::ExecuteChild(const TCommand command, TCmdEnvironment &env) {
-    
+TLsExecutor::TLsExecutor(TEnvironment &globalEnvironment)
+    : Environment_(globalEnvironment)
+{} 
+
+void TLsExecutor::Execute(const TCommand& command, IIStreamWrapper&, std::ostream& os) {
+    namespace fs = std::filesystem;
+    fs::path path; 
+    if (command.Args().size() > 2) {
+        std::cerr << "ls: Too many arguments" << std::endl;
+        return;
+    } else if (command.Args().size() < 2) {
+        path = fs::path(Environment_["PWD"]);
+    } else {
+        path = fs::path(Environment_["PWD"]) / command.Args()[1];
+        if (!fs::exists(path)) {
+            std::cerr << "ls: " << command.Args()[1] << ": No such file or directory" << std::endl;
+            return;
+        }
+    }
+    for (const auto &entry: fs::directory_iterator(path)) {
+        os << entry.path().filename().string() << "  ";
+    }
+    os << std::endl;
+}
+
+TCdExecutor::TCdExecutor(TEnvironment &globalEnvironment)
+    : Environment_(globalEnvironment)
+{} 
+
+void TCdExecutor::Execute(const TCommand& command, IIStreamWrapper&, std::ostream& os) {
+    namespace fs = std::filesystem;
+    fs::path path; 
+    if (command.Args().size() > 2) {
+        std::cerr << "ls: Too many arguments" << std::endl;
+        return;
+    } else if (command.Args().size() < 2) {
+        path = fs::path(Environment_["HOME"]);
+    } else {
+        path = fs::path(Environment_["PWD"]) / command.Args()[1];
+        if (!fs::exists(path)) {
+            std::cerr << "ls: " << command.Args()[1] << ": No such file or directory" << std::endl;
+            return;
+        }
+    }
+    Environment_["PWD"] = fs::canonical(path).string();
 }
 
 } // namespace NPrivate
