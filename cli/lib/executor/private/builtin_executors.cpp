@@ -304,8 +304,13 @@ void TLsExecutor::Execute(const TCommand& command, IIStreamWrapper&, std::ostrea
             return;
         }
     }
+    std::vector<std::string> res;
     for (const auto &entry: fs::directory_iterator(path)) {
-        os << entry.path().filename().string() << "  ";
+        res.push_back(entry.path().filename().string());
+    }
+    std::sort(res.begin(), res.end());
+    for (auto s: res) {
+        os << s << "  ";
     }
     os << std::endl;
 }

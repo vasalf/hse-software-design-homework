@@ -25,6 +25,8 @@
 #include <fstream>
 #include <sstream>
 
+#include <unistd.h>
+
 using namespace NCli;
 
 namespace {
@@ -205,6 +207,41 @@ private:
     std::string Filename_;
 };
 
+class TTempDir final {
+public:
+    TTempDir() {
+        Dirname_ = "tempXXXXXX";
+        mkdtemp(const_cast<char*>(Dirname_.c_str()));
+        chdir(Dirname_.c_str());
+        for (int i = 0; i < 3; i++) {
+            std::string name = "tempXXXXXX";
+            int fd = mkstemp(const_cast<char*>(name.c_str()));
+            close(fd);
+            FileList_.push_back(name);
+        }
+        std::sort(FileList_.begin(), FileList_.end());
+        chdir("..");
+    }
+
+    ~TTempDir() {
+        for (auto s: FileList_) {
+            std::filesystem::remove(std::filesystem::path(Dirname_ + "/" + s));
+        }
+        std::filesystem::remove(std::filesystem::path(Dirname_));
+    }
+
+    std::string Dirname() const {
+        return Dirname_;
+    }
+
+    std::vector<std::string> FileList() const {
+        return FileList_;
+    }
+private:
+    std::vector<std::string> FileList_;
+    std::string Dirname_;
+};
+
 } // namespace <anonymous>
 
 TEST(ExecutorTest, CatWithNoArgs) {
@@ -353,4 +390,86 @@ TEST(ExecutorTest, GrepFile) {
     std::string out = DoGrep("grep abc " + temp1.Filename() + " " + temp2.Filename() + "\n", "ungreped abc\n");
     std::string expected = "abc\n" "abcdef ghi\n" "defabc ghi\n" "abcabc\n";
     ASSERT_EQ(expected, out);
+}
+
+TEST(ExecutorTest, LsWithoutArgs) {
+    TTempDir dir;
+    TEnvironment env;
+    env["PWD"] = std::string(getenv("PWD")) + "/" + dir.Dirname();
+    TExecutorPtr executor = TExecutorFactory::MakeExecutor("ls", env);
+
+    std::istringstream is("");
+    TPipeIStreamWrapper isw(is);
+    std::ostringstream os;
+
+    TCommand cmd({});
+    MakeCommand("ls\n", cmd);
+
+    executor->Execute(cmd, isw, os);
+
+    std::string expected = "";
+    for (auto s: dir.FileList()) {
+        expected += s + "  ";
+    }
+    expected += "\n";
+    ASSERT_EQ(expected, os.str());
+}
+
+TEST(ExecutorTest, LsWithArg) {
+    TTempDir dir;
+    TEnvironment env;
+    env["PWD"] = getenv("PWD");
+    TExecutorPtr executor = TExecutorFactory::MakeExecutor("ls", env);
+
+    std::istringstream is("");
+    TPipeIStreamWrapper isw(is);
+    std::ostringstream os;
+
+    TCommand cmd({});
+    MakeCommand("ls " + dir.Dirname() + "\n", cmd);
+
+    executor->Execute(cmd, isw, os);
+
+    std::string expected = "";
+    for (auto s: dir.FileList()) {
+        expected += s + "  ";
+    }
+    expected += "\n";
+    ASSERT_EQ(expected, os.str());
+}
+
+TEST(ExecutorTest, CdWithoutArgs) {
+    TEnvironment env;
+    env["HOME"] = getenv("HOME");
+    TExecutorPtr executor = TExecutorFactory::MakeExecutor("cd", env);
+
+    std::istringstream is("");
+    TPipeIStreamWrapper isw(is);
+    std::ostringstream os;
+
+    TCommand cmd({});
+    MakeCommand("cd\n", cmd);
+
+    executor->Execute(cmd, isw, os);
+
+    ASSERT_EQ(env["PWD"], env["HOME"]);   
+}
+
+TEST(ExecutorTest, CdWithArg) {
+    TTempDir dir;
+    TEnvironment env;
+    env["PWD"] = getenv("PWD");
+    std::string oldval = env["PWD"];
+    TExecutorPtr executor = TExecutorFactory::MakeExecutor("cd", env);
+
+    std::istringstream is("");
+    TPipeIStreamWrapper isw(is);
+    std::ostringstream os;
+
+    TCommand cmd({});
+    MakeCommand("cd " + dir.Dirname() + "\n", cmd);
+
+    executor->Execute(cmd, isw, os);
+
+    ASSERT_EQ(env["PWD"], oldval + "/" + dir.Dirname());   
 }
