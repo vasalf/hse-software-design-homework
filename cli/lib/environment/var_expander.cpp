@@ -60,8 +60,12 @@ TToken DoExpand(TEnvironment& env, const TToken& token) {
                 for (char x: env[var]) {
                     res.PushBack(TExtChar(x));
                 }
-                state = EState::NOTHING;
-                res.PushBack(c);
+                if (IsVariableIndicator(c)) {
+                    var.clear();
+                } else {
+                    state = EState::NOTHING;
+                    res.PushBack(c);
+                }
             }
         }
     }

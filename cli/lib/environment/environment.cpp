@@ -28,8 +28,8 @@ namespace NCli {
 TEnvironment LoadGlobalEnvironment(const char** envp) {
     TEnvironment ret;
 
-    for (const char** varval = envp; *varval != nullptr; varval++) {
-        auto assignment = ParseEnvVarAssignment(std::string(*varval));
+    for (const char** varVal = envp; *varVal != nullptr; varVal++) {
+        auto assignment = ParseEnvVarAssignment(std::string(*varVal));
         if (assignment.has_value()) {
             ret[assignment.value().Name] = assignment.value().Value;
         }

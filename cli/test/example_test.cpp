@@ -74,3 +74,23 @@ TEST(ExampleTest, Example) {
     close(fd);
     std::filesystem::remove(std::filesystem::path(filename));
 }
+
+TEST(ExampleTest, ExitInSubsequentVars) {
+    std::string input = "x=ex\n"
+                        "y=it\n"
+                        "$x$y\n";
+    std::string expectedOutput = "cli > "
+                                 "cli > "
+                                 "cli > ";
+
+    std::istringstream is(input);
+    NCli::TStdinIStreamWrapper isw(is);
+    std::ostringstream os;
+    std::ostringstream err;
+    char* envp[] = {nullptr};
+
+    NCli::RunMain(isw, os, err, envp);
+
+    ASSERT_TRUE(err.str().empty());
+    ASSERT_EQ(expectedOutput, os.str());
+}

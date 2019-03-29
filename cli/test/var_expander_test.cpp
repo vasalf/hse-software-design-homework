@@ -28,6 +28,8 @@ TEnvironment DefaultTestEnv() {
     environment["VAR"] = "value";
     environment["VARSP"] = "value with spaces";
     environment["BIN_NAME"] = "a";
+    environment["x"] = "ex";
+    environment["y"] = "it";
     return environment;
 }
 
@@ -83,5 +85,12 @@ TEST(VarExpanderTest, PipeAfterVar) {
     DoTest(
         "echo $VAR|cat -\n",
         {"echo", "value", "|", "cat", "-"}
+    );
+}
+
+TEST(VarExpanderTest, SubsequentVars) {
+    DoTest(
+        "$x$y\n",
+        {"exit"}
     );
 }
