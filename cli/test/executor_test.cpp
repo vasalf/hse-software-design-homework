@@ -441,6 +441,7 @@ TEST(ExecutorTest, LsWithArg) {
 TEST(ExecutorTest, CdWithoutArgs) {
     TEnvironment env;
     env["HOME"] = getenv("HOME");
+    std::string oldval = getenv("PWD");
     TExecutorPtr executor = TExecutorFactory::MakeExecutor("cd", env);
 
     std::istringstream is("");
@@ -453,6 +454,7 @@ TEST(ExecutorTest, CdWithoutArgs) {
     executor->Execute(cmd, isw, os);
 
     ASSERT_EQ(env["PWD"], env["HOME"]);   
+    chdir(oldval.c_str());
 }
 
 TEST(ExecutorTest, CdWithArg) {
@@ -471,5 +473,6 @@ TEST(ExecutorTest, CdWithArg) {
 
     executor->Execute(cmd, isw, os);
 
-    ASSERT_EQ(env["PWD"], oldval + "/" + dir.Dirname());   
+    ASSERT_EQ(env["PWD"], oldval + "/" + dir.Dirname());
+    chdir(oldval.c_str());
 }

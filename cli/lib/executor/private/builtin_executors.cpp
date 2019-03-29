@@ -330,11 +330,12 @@ void TCdExecutor::Execute(const TCommand& command, IIStreamWrapper&, std::ostrea
     } else {
         path = fs::path(Environment_["PWD"]) / command.Args()[1];
         if (!fs::exists(path)) {
-            std::cerr << "ls: " << command.Args()[1] << ": No such file or directory" << std::endl;
+            std::cerr << "cd: " << command.Args()[1] << ": No such file or directory" << std::endl;
             return;
         }
     }
     Environment_["PWD"] = fs::canonical(path).string();
+    chdir(Environment_["PWD"].c_str());
 }
 
 } // namespace NPrivate
