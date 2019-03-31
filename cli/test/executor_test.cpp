@@ -476,3 +476,51 @@ TEST(ExecutorTest, CdWithArg) {
     ASSERT_EQ(env["PWD"], oldval + "/" + dir.Dirname());
     chdir(oldval.c_str());
 }
+
+TEST(ExecutorTest, GrepWordRegexp) {
+    std::string out = DoGrep("grep -w ff\n",
+                             "ggff\n"
+                             "ffgg\n"
+                             "ff gg\n"
+                             "gg ff\n"
+                             "ggffgg\n"
+                             "gg ff gg\n"
+                             "ff\n");
+    std::string expected = "ff gg\n"
+                           "gg ff\n"
+                           "gg ff gg\n"
+                           "ff\n";
+    ASSERT_EQ(expected, out);
+}
+
+TEST(ExecutorTest, GrepWordRegexpWithIgnoreCase) {
+    std::string out = DoGrep("grep -wi ff\n",
+                             "ggff\n"
+                             "ffgg\n"
+                             "fF gg\n"
+                             "gg fF\n"
+                             "ggFfgg\n"
+                             "gg fF gg\n"
+                             "FF\n");
+    std::string expected = "fF gg\n"
+                           "gg fF\n"
+                           "gg fF gg\n"
+                           "FF\n";
+    ASSERT_EQ(expected, out);
+}
+
+TEST(ExecutorTest, GrepWordRegexpWithAfterContext) {
+    std::string out = DoGrep("grep -w -A 2 ff\n",
+                             "ffgg\n"
+                             "gg ff\n"
+                             "ff gg\n"
+                             "ffgg\n"
+                             "ggff\n"
+                             "eerr\n");
+    std::string expected = "gg ff\n"
+                           "ff gg\n"
+                           "ffgg\n"
+                           "ggff\n";
+    ASSERT_EQ(expected, out);
+}
+
