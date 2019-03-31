@@ -34,6 +34,12 @@ TExecutorPtr TExecutorFactory::MakeExecutor(const std::string& command, TEnviron
         return std::make_shared<NPrivate::TPwdExecutor>(globalEnvironment);
     } else if (command == "wc") {
         return std::make_shared<NPrivate::TWcExecutor>(globalEnvironment);
+    } else if (command == "grep") {
+        return std::make_shared<NPrivate::TGrepExecutor>(globalEnvironment);
+    } else if (command == "cd") {
+        return std::make_shared<NPrivate::TCdExecutor>(globalEnvironment);
+    } else if (command == "ls") {
+        return std::make_shared<NPrivate::TLsExecutor>(globalEnvironment);
     } else {
         return std::make_shared<NPrivate::TExternalExecutor>(globalEnvironment);
     }

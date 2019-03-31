@@ -173,7 +173,7 @@ private:
 /**
  * Prints number of symbols, words and lines in standard input or in file.
  *
- * This os the executor for builtin command `wc`.
+ * This is the executor for builtin command `wc`.
  */
 class TWcExecutor final : public TDetachedExecutorBase {
 public:
@@ -196,6 +196,87 @@ public:
      * Executes the command.
      */
     int ExecuteChild(const TCommand& command, TCmdEnvironment& env) override;
+};
+
+/**
+ * Prints the line from the input that are matched by a regular expression.
+ *
+ * @see grep(1)
+ */
+class TGrepExecutor final : public TDetachedExecutorBase {
+public:
+    explicit TGrepExecutor(TEnvironment& globalEnvironment);
+
+    /**
+     * It is supposed that all executors are wrapped in std::shared_ptr. Every executor is not copy-constructible nor
+     * -assignable nor move-constructible nor -assignable in order to ensure no illegal action is performed.
+     */
+    ~TGrepExecutor() override = default;
+    TGrepExecutor(const TGrepExecutor&) = delete;
+    TGrepExecutor& operator=(const TGrepExecutor&) = delete;
+    TGrepExecutor(TGrepExecutor&&) noexcept = delete;
+    TGrepExecutor& operator=(TGrepExecutor&&) = delete;
+
+    /**
+     * Executes the command
+     */
+     int ExecuteChild(const TCommand& command, TCmdEnvironment& env) override;
+};
+
+/**
+ * Prints a list of names of all files and directiries in the current directory.
+ *
+ * This is the executor for builtin command `ls`.
+ */
+class TLsExecutor final : public IExecutor {
+public:
+    explicit TLsExecutor(TEnvironment& globalEnvironmrnt);
+    
+    /**
+     * It is supposed that all executors are wrapped in std::shared_ptr. Every executor is not copy-constructible nor
+     * -assignable nor move-constructible nor -assignable in order to ensure no illegal action is performed.
+     */
+    ~TLsExecutor() override = default;
+    TLsExecutor(const TLsExecutor&) = delete;
+    TLsExecutor& operator=(const TLsExecutor&) = delete;
+    TLsExecutor(TLsExecutor&&) noexcept = delete;
+    TLsExecutor& operator=(TLsExecutor&&) = delete;
+
+    /**
+     * {@link NCli::IExecutor::Execute}
+     */
+    void Execute(const TCommand&, IIStreamWrapper&, std::ostream& os) override;
+
+private:
+    TEnvironment& Environment_;
+};
+
+/**
+ * Changes directory to directory given as arg (or changes directory to home directory if arg is empty).
+ *
+ * This is the executor for builtin command `cd`.
+ */
+class TCdExecutor final : public IExecutor {
+public:
+    explicit TCdExecutor(TEnvironment& globalEnvironmrnt);
+    
+    /**
+     * It is supposed that all executors are wrapped in std::shared_ptr. Every executor is not copy-constructible nor
+     * -assignable nor move-constructible nor -assignable in order to ensure no illegal action is performed.
+     */
+    ~TCdExecutor() override = default;
+    TCdExecutor(const TCdExecutor&) = delete;
+    TCdExecutor& operator=(const TCdExecutor&) = delete;
+    TCdExecutor(TCdExecutor&&) noexcept = delete;
+    TCdExecutor& operator=(TCdExecutor&&) = delete;
+
+    /**
+     * {@link NCli::IExecutor::Execute}
+     */
+    void Execute(const TCommand&, IIStreamWrapper&, std::ostream& os) override;
+
+private:
+    TEnvironment& Environment_;
 };
 
 } // namespace NPrivate

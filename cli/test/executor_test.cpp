@@ -25,6 +25,8 @@
 #include <fstream>
 #include <sstream>
 
+#include <unistd.h>
+
 using namespace NCli;
 
 namespace {
@@ -185,6 +187,61 @@ void DoCatStdinTest(std::string command) {
     ASSERT_EQ(INPUT, os.str());
 }
 
+class TTempFile final {
+public:
+    TTempFile() {
+        Filename_ = "tempXXXXXX";
+        Fd_ = mkstemp(const_cast<char*>(Filename_.c_str()));
+    }
+
+    ~TTempFile() {
+        close(Fd_);
+        std::filesystem::remove(std::filesystem::path(Filename_));
+    }
+
+    std::string Filename() const {
+        return Filename_;
+    }
+private:
+    int Fd_;
+    std::string Filename_;
+};
+
+class TTempDir final {
+public:
+    TTempDir() {
+        Dirname_ = "tempXXXXXX";
+        mkdtemp(const_cast<char*>(Dirname_.c_str()));
+        chdir(Dirname_.c_str());
+        for (int i = 0; i < 3; i++) {
+            std::string name = "tempXXXXXX";
+            int fd = mkstemp(const_cast<char*>(name.c_str()));
+            close(fd);
+            FileList_.push_back(name);
+        }
+        std::sort(FileList_.begin(), FileList_.end());
+        chdir("..");
+    }
+
+    ~TTempDir() {
+        for (auto s: FileList_) {
+            std::filesystem::remove(std::filesystem::path(Dirname_ + "/" + s));
+        }
+        std::filesystem::remove(std::filesystem::path(Dirname_));
+    }
+
+    std::string Dirname() const {
+        return Dirname_;
+    }
+
+    std::vector<std::string> FileList() const {
+        return FileList_;
+    }
+private:
+    std::vector<std::string> FileList_;
+    std::string Dirname_;
+};
+
 } // namespace <anonymous>
 
 TEST(ExecutorTest, CatWithNoArgs) {
@@ -198,11 +255,10 @@ TEST(ExecutorTest, CatMinus) {
 TEST(ExecutorTest, CatFile) {
     std::string INPUT = "some\n input in the file";
 
-    std::string filename = "tempXXXXXX";
-    int fd = mkstemp(const_cast<char*>(filename.c_str()));
+    TTempFile temp;
     {
-        std::ofstream out(filename);
-        out << INPUT;
+        std::ofstream of(temp.Filename());
+        of << INPUT;
     }
 
     TEnvironment env;
@@ -214,13 +270,10 @@ TEST(ExecutorTest, CatFile) {
     std::ostringstream os;
 
     TCommand cmd({});
-    MakeCommand("cat " + filename + "\n", cmd);
+    MakeCommand("cat " + temp.Filename() + "\n", cmd);
 
     executor->Execute(cmd, isw, os);
     ASSERT_EQ(INPUT, os.str());
-
-    close(fd);
-    std::filesystem::remove(std::filesystem::path(filename));
 }
 
 TEST(ExecutorTest, Pwd) {
@@ -255,3 +308,219 @@ TEST(ExecutorTest, Wc) {
     executor->Execute(cmd, isw, os);
     ASSERT_EQ("\t3\t3\t21\n", os.str());
 }
+
+namespace {
+
+std::string DoGrep(std::string cmdLine, std::string input) {
+    TEnvironment env;
+    env["PWD"] = getenv("PWD");
+    TExecutorPtr executor = TExecutorFactory::MakeExecutor("grep", env);
+
+    std::istringstream is(input);
+    TPipeIStreamWrapper isw(is);
+    std::ostringstream os;
+
+    TCommand cmd({});
+    MakeCommand(cmdLine, cmd);
+
+    executor->Execute(cmd, isw, os);
+    return os.str();
+}
+
+} // namespace <anonymomus>
+
+TEST(ExecutorTest, GrepStdin) {
+    std::string out = DoGrep("grep abc\n",
+                             "abc\n"
+                             "\n"
+                             "abcdef ghi\n"
+                             "defabc ghi\n"
+                             "defab cghi\n"
+                             "abcabc\n"
+    );
+    std::string expected = "abc\n" "abcdef ghi\n" "defabc ghi\n" "abcabc\n";
+    ASSERT_EQ(expected, out);
+}
+
+TEST(ExecutorTest, GrepIgnoreCase) {
+    std::string out = DoGrep("grep -i abc\n",
+                             "aBc\n"
+                             "\n"
+                             "abCdef ghi\n"
+                             "deFABc ghi\n"
+                             "defAB cghi\n"
+                             "abCAbc\n"
+    );
+    std::string expected = "aBc\n" "abCdef ghi\n" "deFABc ghi\n" "abCAbc\n";
+    ASSERT_EQ(expected, out);
+}
+
+TEST(ExecutorTest, GrepAfterContext) {
+    std::string out = DoGrep("grep -i --after-context 1 ff\n",
+                             "ffgg\n"
+                             "gghh\n"
+                             "gghh\n"
+                             "ffgg\n"
+                             "ffgg\n"
+                             "gghh\n"
+                             "ffgg\n");
+    std::string expected = "ffgg\n"
+                           "gghh\n"
+                           "ffgg\n"
+                           "ffgg\n"
+                           "gghh\n"
+                           "ffgg\n";
+    ASSERT_EQ(expected, out);
+}
+
+TEST(ExecutorTest, GrepFile) {
+    TTempFile temp1, temp2;
+    {
+        std::ofstream of(temp1.Filename());
+        of << "abc\n"
+              "\n"
+              "abcdef ghi\n";
+    }
+    {
+        std::ofstream of(temp2.Filename()) ;
+        of << "defabc ghi\n"
+               "defab cghi\n"
+               "abcabc\n";
+    }
+    std::string out = DoGrep("grep abc " + temp1.Filename() + " " + temp2.Filename() + "\n", "ungreped abc\n");
+    std::string expected = "abc\n" "abcdef ghi\n" "defabc ghi\n" "abcabc\n";
+    ASSERT_EQ(expected, out);
+}
+
+TEST(ExecutorTest, LsWithoutArgs) {
+    TTempDir dir;
+    TEnvironment env;
+    env["PWD"] = std::string(getenv("PWD")) + "/" + dir.Dirname();
+    TExecutorPtr executor = TExecutorFactory::MakeExecutor("ls", env);
+
+    std::istringstream is("");
+    TPipeIStreamWrapper isw(is);
+    std::ostringstream os;
+
+    TCommand cmd({});
+    MakeCommand("ls\n", cmd);
+
+    executor->Execute(cmd, isw, os);
+
+    std::string expected = "";
+    for (auto s: dir.FileList()) {
+        expected += s + "  ";
+    }
+    expected += "\n";
+    ASSERT_EQ(expected, os.str());
+}
+
+TEST(ExecutorTest, LsWithArg) {
+    TTempDir dir;
+    TEnvironment env;
+    env["PWD"] = getenv("PWD");
+    TExecutorPtr executor = TExecutorFactory::MakeExecutor("ls", env);
+
+    std::istringstream is("");
+    TPipeIStreamWrapper isw(is);
+    std::ostringstream os;
+
+    TCommand cmd({});
+    MakeCommand("ls " + dir.Dirname() + "\n", cmd);
+
+    executor->Execute(cmd, isw, os);
+
+    std::string expected = "";
+    for (auto s: dir.FileList()) {
+        expected += s + "  ";
+    }
+    expected += "\n";
+    ASSERT_EQ(expected, os.str());
+}
+
+TEST(ExecutorTest, CdWithoutArgs) {
+    TEnvironment env;
+    env["HOME"] = getenv("HOME");
+    std::string oldval = getenv("PWD");
+    TExecutorPtr executor = TExecutorFactory::MakeExecutor("cd", env);
+
+    std::istringstream is("");
+    TPipeIStreamWrapper isw(is);
+    std::ostringstream os;
+
+    TCommand cmd({});
+    MakeCommand("cd\n", cmd);
+
+    executor->Execute(cmd, isw, os);
+
+    ASSERT_EQ(env["PWD"], env["HOME"]);   
+    chdir(oldval.c_str());
+}
+
+TEST(ExecutorTest, CdWithArg) {
+    TTempDir dir;
+    TEnvironment env;
+    env["PWD"] = getenv("PWD");
+    std::string oldval = env["PWD"];
+    TExecutorPtr executor = TExecutorFactory::MakeExecutor("cd", env);
+
+    std::istringstream is("");
+    TPipeIStreamWrapper isw(is);
+    std::ostringstream os;
+
+    TCommand cmd({});
+    MakeCommand("cd " + dir.Dirname() + "\n", cmd);
+
+    executor->Execute(cmd, isw, os);
+
+    ASSERT_EQ(env["PWD"], oldval + "/" + dir.Dirname());
+    chdir(oldval.c_str());
+}
+
+TEST(ExecutorTest, GrepWordRegexp) {
+    std::string out = DoGrep("grep -w ff\n",
+                             "ggff\n"
+                             "ffgg\n"
+                             "ff gg\n"
+                             "gg ff\n"
+                             "ggffgg\n"
+                             "gg ff gg\n"
+                             "ff\n");
+    std::string expected = "ff gg\n"
+                           "gg ff\n"
+                           "gg ff gg\n"
+                           "ff\n";
+    ASSERT_EQ(expected, out);
+}
+
+TEST(ExecutorTest, GrepWordRegexpWithIgnoreCase) {
+    std::string out = DoGrep("grep -wi ff\n",
+                             "ggff\n"
+                             "ffgg\n"
+                             "fF gg\n"
+                             "gg fF\n"
+                             "ggFfgg\n"
+                             "gg fF gg\n"
+                             "FF\n");
+    std::string expected = "fF gg\n"
+                           "gg fF\n"
+                           "gg fF gg\n"
+                           "FF\n";
+    ASSERT_EQ(expected, out);
+}
+
+TEST(ExecutorTest, GrepWordRegexpWithAfterContext) {
+    std::string out = DoGrep("grep -w -A 2 ff\n",
+                             "ffgg\n"
+                             "gg ff\n"
+                             "ff gg\n"
+                             "ffgg\n"
+                             "ggff\n"
+                             "eerr\n");
+    std::string expected = "gg ff\n"
+                           "ff gg\n"
+                           "ffgg\n"
+                           "ggff\n";
+    ASSERT_EQ(expected, out);
+}
+
