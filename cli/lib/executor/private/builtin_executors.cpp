@@ -25,9 +25,12 @@
 #include <filesystem>
 #include <fstream>
 #include <optional>
+#include <regex>
 
 #include <unistd.h>
 #include <sys/wait.h>
+
+#include <CLI/CLI11.hpp>
 
 namespace NCli {
 namespace NPrivate {
@@ -61,17 +64,6 @@ void TEchoExecutor::Execute(const TCommand& cmd, IIStreamWrapper&, std::ostream&
 }
 
 namespace {
-
-void CopyPipeContentsToOStream(const TPipe& pipe, std::ostream& os) {
-    char buf[128];
-    std::memset(buf, 0, sizeof(buf));
-    ssize_t status;
-    do {
-        os << buf;
-        status = read(pipe.ReadEndDescriptor(), buf, sizeof(buf) - 1);
-        buf[status] = 0;
-    } while (status != 0);
-}
 
 std::optional<std::string> ResolveFilename(TCmdEnvironment& env, std::string filename) {
     namespace fs = std::filesystem;
@@ -186,6 +178,189 @@ int TWcExecutor::ExecuteChild(const TCommand& cmd, TCmdEnvironment& cmdEnv) {
 
     std::cout << "\t" << lines << "\t" << words << "\t" << bytes << std::endl;
     return 0;
+}
+
+namespace {
+
+/**
+ * This interface represents strategy used to determine whether to select line or not. Currently there are at least two
+ * separate strategies: the default and for word regexs.
+ */
+class IGrepStrategy {
+public:
+    /**
+     * Returns whether a line should be printed or not.
+     */
+    virtual bool LineMatches(const std::regex& pattern, const std::string& line) = 0;
+};
+
+using TGrepStrategyPtr = std::shared_ptr<IGrepStrategy>;
+
+/**
+ * This represents the default strategy.
+ */
+class TGrepLineRegexp final : public IGrepStrategy {
+public:
+    /**
+     * The line is accepted if it contains a matching substring.
+     */
+    bool LineMatches(const std::regex& pattern, const std::string& line) override {
+        return std::regex_search(line, pattern);
+    }
+};
+
+/**
+ * This represent the whole-word strategy.
+ */
+class TGrepWordRegexp final : public IGrepStrategy {
+    /**
+     * {@see grep(1)}
+     */
+    bool IsWordConstituentCharacter(char c) {
+        return std::isalnum(c) || c == '_';
+    }
+
+public:
+
+    /**
+     * The line is accepted if it contains a matching substring that is a whole word. More formally, either line start
+     * or a non-word constituent character must be to the left of the match and the similar condition must satisfy
+     * at the right of the match.
+     */
+    bool LineMatches(const std::regex& pattern, const std::string& line) override {
+        std::string lineCopy = line;
+
+        std::sregex_iterator end;
+        for (std::sregex_iterator match(line.begin(), line.end(), pattern); match != end; match++) {
+            if (!(match->prefix().str().empty() || !IsWordConstituentCharacter(match->prefix().str().back()))) {
+                continue;
+            }
+            if (!(match->suffix().str().empty() || !IsWordConstituentCharacter(match->suffix().str()[0]))) {
+                continue;
+            }
+            return true;
+        }
+
+        return false;
+    }
+};
+
+/**
+ * This exception is thrown whenever bad options are passed to the grep executor. It is added in order to incapsulate
+ * both error message and expected error code from CLI11. For some reason, it is CLI::App's responsibility to choose
+ * the return code and the main idea of putting {@link ParseGrepArgs} code into separate function is to abstract from
+ * concrete command line flags parser.
+ */
+class TGrepBadOptionsException final : public std::runtime_error {
+public:
+    TGrepBadOptionsException(const std::string& message, int retCode)
+        : std::runtime_error(message)
+        , RetCode_(retCode)
+    {}
+
+    int RetCode() const {
+        return RetCode_;
+    }
+
+private:
+    int RetCode_;
+};
+
+struct TGrepOpts {
+    bool IgnoreCase;
+    bool WordRegexp;
+    std::optional<int> AfterContext;
+    std::string Pattern;
+    std::vector<std::string> Filenames;
+};
+
+TGrepOpts ParseGrepArgs(const TCommand& command) {
+    CLI::App app{"Search for PATTERN in each FILE"};
+
+    TGrepOpts opts;
+    app.add_flag("-i,--ignore-case", opts.IgnoreCase, "ignore case distinctions");
+    app.add_flag("-w,--word-regexp", opts.WordRegexp, "force PATTERN to match only whole words");
+    app.add_option("-A,--after-context", opts.AfterContext, "print NUM lines of trailing context");
+    app.add_option("pattern", opts.Pattern, "PATTERN")->required();
+    app.add_option("files", opts.Filenames, "FILES");
+
+    try {
+        std::vector<char*> args;
+        std::transform(command.Args().begin(), command.Args().end(), std::back_inserter(args),
+                       [](const std::string& s) { return const_cast<char*>(s.c_str()); }
+        );
+        app.parse((int)args.size(), args.data());
+    } catch (CLI::ParseError& e) {
+        throw TGrepBadOptionsException(e.what(), app.exit(e));
+    }
+
+    return opts;
+}
+
+void DoGrepIStream(const TGrepOpts& opts, const std::regex& pattern, TGrepStrategyPtr strategy, std::istream& is) {
+    int printLines = -1;
+    std::string s;
+    while (std::getline(is, s)) {
+        if (strategy->LineMatches(pattern, s)) {
+            printLines = opts.AfterContext.value_or(0);
+        }
+        if (printLines >= 0) {
+            std::cout << s << std::endl;
+            printLines--;
+        }
+    }
+}
+
+} // namespace <anonymous>
+
+TGrepExecutor::TGrepExecutor(TEnvironment& globalEnvironment)
+        : TDetachedExecutorBase(globalEnvironment)
+{}
+
+int TGrepExecutor::ExecuteChild(const TCommand& command, TCmdEnvironment& env) {
+    TGrepOpts opts;
+    try {
+        opts = ParseGrepArgs(command);
+    } catch (TGrepBadOptionsException& e) {
+        return e.RetCode();
+    }
+
+    TGrepStrategyPtr strategy;
+    if (opts.WordRegexp) {
+        strategy = std::make_shared<TGrepWordRegexp>();
+    } else {
+        strategy = std::make_shared<TGrepLineRegexp>();
+    }
+
+    auto regexStyle = std::regex_constants::grep;
+    if (opts.IgnoreCase) {
+        regexStyle |= std::regex_constants::icase;
+    }
+    std::regex pattern;
+    try {
+        pattern = std::regex(opts.Pattern, regexStyle);
+    } catch (std::regex_error& e) {
+        std::cerr << "grep: " << e.what() << std::endl;
+        return 2;
+    }
+
+    int exitCode = 0;
+    if (opts.Filenames.empty()) {
+        DoGrepIStream(opts, pattern, strategy, std::cin);
+    } else {
+        for (const auto& file : opts.Filenames) {
+            auto filename = ResolveFilename(env, file);
+            if (!filename.has_value()) {
+                std::cerr << "grep: " << file << ": No such file or directory" << std::endl;
+                exitCode = 2;
+            } else {
+                std::ifstream fin(filename.value());
+                DoGrepIStream(opts, pattern, strategy, fin);
+            }
+        }
+    }
+
+    return exitCode;
 }
 
 } // namespace NPrivate

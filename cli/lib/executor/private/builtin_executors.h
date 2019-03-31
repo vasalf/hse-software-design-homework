@@ -198,5 +198,30 @@ public:
     int ExecuteChild(const TCommand& command, TCmdEnvironment& env) override;
 };
 
+/**
+ * Prints the line from the input that are matched by a regular expression.
+ *
+ * @see grep(1)
+ */
+class TGrepExecutor final : public TDetachedExecutorBase {
+public:
+    explicit TGrepExecutor(TEnvironment& globalEnvironment);
+
+    /**
+     * It is supposed that all executors are wrapped in std::shared_ptr. Every executor is not copy-constructible nor
+     * -assignable nor move-constructible nor -assignable in order to ensure no illegal action is performed.
+     */
+    ~TGrepExecutor() override = default;
+    TGrepExecutor(const TGrepExecutor&) = delete;
+    TGrepExecutor& operator=(const TGrepExecutor&) = delete;
+    TGrepExecutor(TGrepExecutor&&) noexcept = delete;
+    TGrepExecutor& operator=(TGrepExecutor&&) = delete;
+
+    /**
+     * Executes the command
+     */
+     int ExecuteChild(const TCommand& command, TCmdEnvironment& env) override;
+};
+
 } // namespace NPrivate
 } // namespace NCli
